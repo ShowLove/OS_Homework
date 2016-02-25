@@ -16,19 +16,5 @@ P1 wait 0 turnaround 24
 P2 wait 21 turnaround 24
 P3 wait 23 turnaround 26
 
-when p arrive
-(p-1) finish burst
-p selected
-run selected + burst
-if (p+1) arrives wait p finishes burst
-
-if ( arrive && selected ) // at same time 
-	1.	arrive
-	2.	selected
-if	(arrived while other process still active)
-	arrived
-if  ( a process is finished state it)
-
-priorety
-
-arrived, finished, selected 
+///////////////////////////////////////
+Can two things arrive at the same time?

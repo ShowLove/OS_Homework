@@ -1,6 +1,7 @@
 import java.util.Arrays;
 import java.io.*;
 import java.util.*;
+import java.util.Arrays;
 
 public class processes
 {
@@ -11,7 +12,7 @@ public class processes
 		processes();
 	}
 
-/*
+/*DEBUG
             System.out.println("p_"+processCount+" r_"+runFor+" u_"+use);
             System.out.println(" q_"+quantum+" proCount_"+processCount);
             System.out.println(" arrival_"+arrival+" burst_"+burst);
@@ -27,10 +28,22 @@ public class processes
 		int prevSelected = 0;
 		int prevFinished = 0;
 
-		//Hashtable<Integer,Integer> timeData = new Hashtable<Integer,Integer>()
-		Integer[][] timeList = new Integer[processCount+1][3];
+		//Map<String, List<String>> pData = new Hashtable<String, List<String>>();
+		//Map<Integer, List<Integer>> pData = new Hashtable<Integer, List<Integer>>();
 
-		//What can happen when i = runFor?
+		//timeList[x][y] x --> process y.0 arrival, y.1 selected, y.2 finished
+		Integer[][] timeList = new Integer[processCount+1][3];
+		//Sorted timeList times
+		Integer[] sortedTimes = new Integer[processCount*3];
+		Integer[] arivedSortedT = new Integer[processCount];
+		Integer[] selectedSortedT = new Integer[processCount];
+		Integer[] finishedSortedT = new Integer[processCount];
+
+		///////////////////////////////////////////
+		//Put data in timelist array
+		//(arrived,selected, finished) --> timeList
+		//timeList[x][y] y.0 arrival,y.1 selected,y.2 finished
+		///////////////////////////////////////////
 		for( int p = 1; p <= processCount; p++)
 		{
 			// for p
@@ -43,12 +56,40 @@ public class processes
 
 			//finished = prevFinished + burst;
 			timeList[p][2] = prevFinished + burst;
+			/* DEBUG
 			System.out.println("Time "+timeList[p][0]+": P"+p+" arrived");
 			System.out.println("Time "+timeList[p][1]+": P"+p+" selected (burst "+burst+")" );
 			System.out.println("Time "+timeList[p][2]+": P"+p+" finished");
+			*/
 			prevFinished = timeList[p][2];
 		}
 
+		int k = 0;
+
+		//put times in single array
+		for(int p =1; p <= processCount; p++ )
+		{
+			for(int j = 0; j < 3; j++)
+			{
+				sortedTimes[k] = timeList[p][j];
+
+				k = k+1;
+			}
+			arivedSortedT[p-1] = timeList[p][0];
+			selectedSortedT[p-1] = timeList[p][1];
+			finishedSortedT[p-1] = timeList[p][2];
+		}
+
+		Arrays.sort( arivedSortedT );
+		Arrays.sort( selectedSortedT );
+		Arrays.sort( finishedSortedT );
+		Arrays.sort( sortedTimes );
+
+		System.out.println("1D Array->");
+		System.out.println( Arrays.toString( sortedTimes ) );
+		System.out.println( Arrays.toString( arivedSortedT ) );
+		System.out.println( Arrays.toString( selectedSortedT ) );
+		System.out.println( Arrays.toString( finishedSortedT ) );
 	}
 
 	public static void processes()
