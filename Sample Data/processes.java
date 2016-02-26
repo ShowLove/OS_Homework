@@ -35,9 +35,13 @@ public class processes
 		Integer[][] timeList = new Integer[processCount+1][3];
 		//Sorted timeList times
 		Integer[] sortedTimes = new Integer[processCount*3];
-		Integer[] arivedSortedT = new Integer[processCount];
-		Integer[] selectedSortedT = new Integer[processCount];
-		Integer[] finishedSortedT = new Integer[processCount];
+
+		//Sorted arival, select and finished times
+		// [X][P] row:  0 = process # P, 1 = time for process P
+		// [P][P] column: time for process 'P'
+		Integer[][] arivedSortedT = new Integer[2][processCount];
+		Integer[][] selectedSortedT = new Integer[2][processCount];
+		Integer[][] finishedSortedT = new Integer[2][processCount];
 
 		///////////////////////////////////////////
 		//Put data in timelist array
@@ -75,11 +79,30 @@ public class processes
 
 				k = k+1;
 			}
-			arivedSortedT[p-1] = timeList[p][0];
-			selectedSortedT[p-1] = timeList[p][1];
-			finishedSortedT[p-1] = timeList[p][2];
+			arivedSortedT[0][p-1] = p;				//process
+			arivedSortedT[1][p-1] = timeList[p][0]; //time for that process
+			selectedSortedT[0][p-1] = p;
+			selectedSortedT[1][p-1] = timeList[p][1];
+			finishedSortedT[0][p-1] = p;
+			finishedSortedT[1][p-1] = timeList[p][2];
 		}
 
+		//print Arrays before sort
+		System.out.println("Arrays before sort arrived,Selected,Finished");
+		System.out.println(Arrays.deepToString(arivedSortedT));
+		System.out.println(Arrays.deepToString(selectedSortedT));
+		System.out.println(Arrays.deepToString(finishedSortedT));
+		//Sort double arrays
+		bubbleSort(arivedSortedT);
+		bubbleSort(selectedSortedT);
+		bubbleSort(finishedSortedT);
+		//print arrays after sort
+		System.out.println("Arrays after sort arrived,Selected,Finished");
+		System.out.println(Arrays.deepToString(arivedSortedT));
+		System.out.println(Arrays.deepToString(selectedSortedT));
+		System.out.println(Arrays.deepToString(finishedSortedT));
+
+/*
 		Arrays.sort( arivedSortedT );
 		Arrays.sort( selectedSortedT );
 		Arrays.sort( finishedSortedT );
@@ -90,6 +113,7 @@ public class processes
 		System.out.println( Arrays.toString( arivedSortedT ) );
 		System.out.println( Arrays.toString( selectedSortedT ) );
 		System.out.println( Arrays.toString( finishedSortedT ) );
+*/
 	}
 
 	public static void processes()
@@ -175,4 +199,31 @@ public class processes
         }
 
 	}
+
+	private static void bubbleSort(Integer[][] intArray) 
+	{
+
+    int n = intArray.length;
+	    int temp = 0;
+	    int tempP = 0;
+	   
+	    for(int i=0; i < n; i++){
+	            for(int j=1; j < (n-i); j++){
+	                   
+	                    if(intArray[1][j-1] > intArray[1][j]){
+	                            //swap the elements!
+	                            temp = intArray[1][j-1];
+	                            intArray[1][j-1] = intArray[1][j];
+	                            intArray[1][j] = temp;
+
+	                            //now swap the p values
+	                            tempP = intArray[0][j-1];
+	                            intArray[0][j-1] = intArray[0][j];
+	                            intArray[0][j] = tempP;
+	                    }
+	                   
+	            }
+	    }
+	}
+
 }
