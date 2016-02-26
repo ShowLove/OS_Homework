@@ -3,6 +3,11 @@ import java.io.*;
 import java.util.*;
 import java.util.Arrays;
 
+//For writting to a file
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class processes
 {
 	public static int[][] arivalBurst;
@@ -12,12 +17,7 @@ public class processes
 		processes();
 	}
 
-/*DEBUG
-            System.out.println("p_"+processCount+" r_"+runFor+" u_"+use);
-            System.out.println(" q_"+quantum+" proCount_"+processCount);
-            System.out.println(" arrival_"+arrival+" burst_"+burst);
-            System.out.println(Arrays.deepToString(arivalBurst));
-*/
+
 
 	public static void runfcfs(int runFor, int processCount)
 	{
@@ -27,9 +27,6 @@ public class processes
 		int finished = 0;
 		int prevSelected = 0;
 		int prevFinished = 0;
-
-		//Map<String, List<String>> pData = new Hashtable<String, List<String>>();
-		//Map<Integer, List<Integer>> pData = new Hashtable<Integer, List<Integer>>();
 
 		//timeList[x][y] x --> process y.0 arrival, y.1 selected, y.2 finished
 		Integer[][] timeList = new Integer[processCount+1][3];
@@ -60,11 +57,7 @@ public class processes
 
 			//finished = prevFinished + burst;
 			timeList[p][2] = prevFinished + burst;
-			/* DEBUG
-			System.out.println("Time "+timeList[p][0]+": P"+p+" arrived");
-			System.out.println("Time "+timeList[p][1]+": P"+p+" selected (burst "+burst+")" );
-			System.out.println("Time "+timeList[p][2]+": P"+p+" finished");
-			*/
+
 			prevFinished = timeList[p][2];
 		}
 
@@ -90,24 +83,32 @@ public class processes
 		//Sort single array
 		Arrays.sort(sortedTimes);
 
-		//print Arrays before sort
-		System.out.println("Arrays before sort arrived,Selected,Finished");
-		System.out.println(Arrays.deepToString(arivedSortedT));
-		System.out.println(Arrays.deepToString(selectedSortedT));
-		System.out.println(Arrays.deepToString(finishedSortedT));
-		//Sort double arrays
-		bubbleSort(arivedSortedT);
-		bubbleSort(selectedSortedT);
-		bubbleSort(finishedSortedT);
-		//print arrays after sort
-		System.out.println("Arrays after sort arrived,Selected,Finished");
-		System.out.println(Arrays.deepToString(arivedSortedT));
-		System.out.println(Arrays.deepToString(selectedSortedT));
-		System.out.println(Arrays.deepToString(finishedSortedT));
-		System.out.println("AllSortTs("+Arrays.toString(sortedTimes)+")");
-
-
+		//Print Desired Output
+		printToFile();
 	}
+
+	public static void printToFile()
+	{
+		try {
+
+			File file = new File("myTestFile.txt");
+
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write("Wasaaa");
+			bw.close();
+
+			System.out.println("Done");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}// end of file write method
 
 	public static void processes()
 	{
@@ -150,7 +151,8 @@ public class processes
 	            		quantum = Integer.parseInt( values[i+1] );
 	            	if(values[i].equals("name"))
 	            	{
-	            		//get process number as int//*numProcessStr = values[i+1];*///*numChar = numProcessStr.charAt(1);//
+	            		//get process number as int
+	            		//numProcessStr = values[i+1]///numChar = numProcessStr.charAt(1);//
 	            		processCount = Character.getNumericValue(numChar);
 
 	            		//Number of Process element
@@ -220,3 +222,34 @@ public class processes
 	}
 
 }
+
+		/* DEBUG LINE 81
+		//print Arrays before sort
+		System.out.println("Arrays before sort arrived,Selected,Finished");
+		System.out.println(Arrays.deepToString(arivedSortedT));
+		System.out.println(Arrays.deepToString(selectedSortedT));
+		System.out.println(Arrays.deepToString(finishedSortedT));
+		//Sort double arrays
+		bubbleSort(arivedSortedT);
+		bubbleSort(selectedSortedT);
+		bubbleSort(finishedSortedT);
+		//print arrays after sort
+		System.out.println("Arrays after sort arrived,Selected,Finished");
+		System.out.println(Arrays.deepToString(arivedSortedT));
+		System.out.println(Arrays.deepToString(selectedSortedT));
+		System.out.println(Arrays.deepToString(finishedSortedT));
+		System.out.println("AllSortTs("+Arrays.toString(sortedTimes)+")");
+		*/
+
+/*DEBUG
+            System.out.println("p_"+processCount+" r_"+runFor+" u_"+use);
+            System.out.println(" q_"+quantum+" proCount_"+processCount);
+            System.out.println(" arrival_"+arrival+" burst_"+burst);
+            System.out.println(Arrays.deepToString(arivalBurst));
+*/
+
+			/* DEBUG  Line 57
+			System.out.println("Time "+timeList[p][0]+": P"+p+" arrived");
+			System.out.println("Time "+timeList[p][1]+": P"+p+" selected (burst "+burst+")" );
+			System.out.println("Time "+timeList[p][2]+": P"+p+" finished");
+			*/
