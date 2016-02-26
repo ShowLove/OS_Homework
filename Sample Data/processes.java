@@ -87,6 +87,9 @@ public class processes
 			finishedSortedT[1][p-1] = timeList[p][2];
 		}
 
+		//Sort single array
+		Arrays.sort(sortedTimes);
+
 		//print Arrays before sort
 		System.out.println("Arrays before sort arrived,Selected,Finished");
 		System.out.println(Arrays.deepToString(arivedSortedT));
@@ -101,19 +104,9 @@ public class processes
 		System.out.println(Arrays.deepToString(arivedSortedT));
 		System.out.println(Arrays.deepToString(selectedSortedT));
 		System.out.println(Arrays.deepToString(finishedSortedT));
+		System.out.println("AllSortTs("+Arrays.toString(sortedTimes)+")");
 
-/*
-		Arrays.sort( arivedSortedT );
-		Arrays.sort( selectedSortedT );
-		Arrays.sort( finishedSortedT );
-		Arrays.sort( sortedTimes );
 
-		System.out.println("1D Array->");
-		System.out.println( Arrays.toString( sortedTimes ) );
-		System.out.println( Arrays.toString( arivedSortedT ) );
-		System.out.println( Arrays.toString( selectedSortedT ) );
-		System.out.println( Arrays.toString( finishedSortedT ) );
-*/
 	}
 
 	public static void processes()
