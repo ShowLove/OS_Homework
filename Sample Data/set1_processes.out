@@ -17,4 +17,28 @@ P2 wait 21 turnaround 24
 P3 wait 23 turnaround 26
 
 ///////////////////////////////////////
+P1 arrived; print P1
+
+Print all that arrive before 
+(P1-1) is finished
+
+print (P1-1) finished
+
+print P1 selected
+
+print all that arrive before P1 Finished
+
+print P1 finished
+
+go to next arrived in the queue and start over
+
+/////////////////////////////////////////
 Can two things arrive at the same time?
+
+A = arrived,  S = selected, F = finished
+
+for P:  A before S
+(P-1) F befor P(S)
+
+1. search p-1 for a finish ("you have arrival")
+2. search for p finished ("if you find it you have selected")

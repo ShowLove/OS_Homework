@@ -79,15 +79,19 @@ public class processes
 			finishedSortedT[0][p-1] = p;
 			finishedSortedT[1][p-1] = timeList[p][2];
 		}
+		//Sort double arrays
+		bubbleSort(arivedSortedT);
+		bubbleSort(selectedSortedT);
+		bubbleSort(finishedSortedT);
 
 		//Sort single array
 		Arrays.sort(sortedTimes);
 
-		//Print Desired Output
-		printToFile();
+		//Print Desired Output to text file
+		printToFile(arivedSortedT, selectedSortedT, finishedSortedT, sortedTimes, runFor, processCount);
 	}
 
-	public static void printToFile()
+	public static void printToFile(Integer[][] arivedSortedT, Integer[][] selectedSortedT, Integer[][] finishedSortedT, Integer[] sortedTimes, int runFor, int processCount)
 	{
 		try {
 
@@ -100,7 +104,135 @@ public class processes
 
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write("Wasaaa");
+			///////////////////////////////////////////////////////
+			// 	Output to file here
+			///////////////////////////////////////////////////////
+			//arivedSortedT, selectedSortedT, finishedSortedT
+			//bw.write("Time "+arivedSortedT[1][P-1]+": P"+arivedSortedT[0][P-1]+" arrived\n");
+			//bw.write("Time "+selectedSortedT[1][P-1]+": P"+selectedSortedT[0][P-1]+" selected (burst "+arivalBurst[P][0]+")");
+			//TIME arivedSortedT[1][P-1]	P arivedSortedT[0][P-1]
+			/* DEBUG
+			System.out.println("Before");
+			System.out.println(Arrays.deepToString(arivedSortedT));
+			System.out.println(Arrays.deepToString(selectedSortedT));
+			System.out.println(Arrays.deepToString(finishedSortedT));
+			invalidateItem(arivedSortedT);
+			invalidateItem(selectedSortedT);
+			invalidateItem(selectedSortedT);
+			findNextValidP(selectedSortedT);
+			System.out.println("After");
+			System.out.println(Arrays.deepToString(arivedSortedT));
+			System.out.println(Arrays.deepToString(selectedSortedT));
+			System.out.println(Arrays.deepToString(finishedSortedT));
+			System.out.println("ValidOnSelectNext_"+findNextValidP(selectedSortedT));
+			*/
+
+			//My algorithm 
+/*
+1.	P1 arrived; print P1
+2.	Print all that arrive before (P1-1) is finished
+3.	print (P1-1) finished
+4.	print P1 selected
+5.	print all that arrive before P1 Finished
+6.	print P1 finished
+7.	go to next arrived in the queue and start over
+*/
+			
+			int tA = 0, tS = 0, tF = 0;
+			int pA = 0, pS = 0, pF = 0;
+			int prevFinishedT = 0; int prevFinishedP = 0;
+
+
+			printHeaderFCFS(processCount, bw);
+			////////////////////////////////////////////////////////
+			//Print all that have arrived been selected or finished
+			///////////////////////////////////////////////////////
+
+			while(pF != 999 )
+			{
+				//1.	P1 arrived; print P1 arrived
+				pA = findNextValidP(arivedSortedT);
+				if(pA != 999)	//If we still have arrived items to sort out
+				{
+					tA = getTimeForP(arivedSortedT, pA);
+					printArrived(bw, tA, pA);
+					invalidateItem(arivedSortedT);
+					//2.	Print all that arrive before (P1-1) is finished
+					pA = findNextValidP(arivedSortedT);
+					tA = getTimeForP(arivedSortedT, pA);
+					while( prevFinishedT > tA)
+					{
+						printArrived(bw, tA, pA);
+						invalidateItem(arivedSortedT);
+						pA = findNextValidP(arivedSortedT);
+						tA = getTimeForP(arivedSortedT, pA);			
+					}
+					//3.	print (P1-1) finished (still have to invalidate later)
+					if(prevFinishedP > 0)
+					{
+						printFinished(bw, prevFinishedT, prevFinishedP);
+					}
+				}
+				//4.	print P1 selected
+				pS = findNextValidP(selectedSortedT);
+				if( pS != 999 )
+				{
+					tS = getTimeForP(selectedSortedT, pS);
+					printSelected(bw, tS, pS, arivalBurst[pS][1]);
+					invalidateItem(selectedSortedT);
+			
+					//5.	print all that arrive before P1 Finished
+					pA = findNextValidP(arivedSortedT);
+					if( pA != 999 )
+					{
+						tA = getTimeForP(arivedSortedT, pA);
+						pF = findNextValidP(finishedSortedT);
+						tF = getTimeForP(finishedSortedT, pA);
+						while(tA < tF)
+						{
+							printArrived(bw, tA, pA);
+							invalidateItem(arivedSortedT);
+							pA = findNextValidP(arivedSortedT);
+							if(pA == 999 ) //all items in array have been used
+							{
+								break;
+							}
+							tA = getTimeForP(arivedSortedT, pA);
+							pF = findNextValidP(finishedSortedT);
+							tF = getTimeForP(finishedSortedT, pA);
+						}
+					}
+				}
+				System.out.println(Arrays.deepToString(arivedSortedT));
+				System.out.println(Arrays.deepToString(selectedSortedT));
+				System.out.println(Arrays.deepToString(finishedSortedT));
+
+				//6.	print P1 finished
+				pF = findNextValidP(finishedSortedT);
+				if( pF != 999 )
+				{
+					tF = getTimeForP(finishedSortedT, pF);
+					
+					printFinished(bw, tF, pF);
+					invalidateItem(finishedSortedT);
+					prevFinishedT = tF;
+					prevFinishedP = pF;
+				}
+				else
+				{
+					pF = 999;	//probably not necessary
+					break;
+				}
+			}// end of print a s f while loop
+
+			/* DEBUG
+			System.out.println(Arrays.deepToString(arivedSortedT));
+			System.out.println(Arrays.deepToString(selectedSortedT));
+			System.out.println(Arrays.deepToString(finishedSortedT));
+			*/
+			//////////////////////////////////////////////////////
+			// 	End output to file
+			///////////////////////////////////////////////////////
 			bw.close();
 
 			System.out.println("Done");
@@ -109,6 +241,102 @@ public class processes
 			e.printStackTrace();
 		}
 	}// end of file write method
+
+	public static void printArrived(BufferedWriter bw, int time, int process)
+	{
+		try {
+			bw.write("Time "+time+": P"+process+" arrived\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printSelected(BufferedWriter bw, int time, int process, int burst)
+	{
+		try {
+			bw.write("Time "+time+": P"+process+" selected (burst "+burst+")\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printFinished(BufferedWriter bw, int time, int process)
+	{
+		try {
+			bw.write("Time "+time+": P"+process+" finished\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printHeaderFCFS(int processCount, BufferedWriter bw)
+	{
+		try {
+			bw.write(processCount+" processes\n");
+			bw.write("Using First Come First Served\n\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printArrivedPsBeforePFinishedFCFS(Integer[][] myArray)
+	{
+		//Do stuff
+		int i = 0;
+	}
+
+	public static int findNextValidP(Integer[][] myArray )
+	{
+		int currentProcess = 999; ///999 is invalid
+		int P = 0;
+		while( currentProcess == 999 )
+		{
+			P++;
+			if(P > myArray[0].length)
+			{
+				return 999; // this means everything is invalid
+			}
+			currentProcess = myArray[0][P-1];
+		}
+		return currentProcess;
+	}
+
+	public static void invalidateItem(Integer[][] myArray)
+	{
+		int currentProcess = 999; ///999 is invalid
+		int P = 0;
+		//Find next valid item
+		while( currentProcess == 999 )
+		{
+			P++;
+			currentProcess = myArray[0][P-1];
+		}
+
+		//Invalidate that item
+		myArray[0][currentProcess-1] = 999;
+	}
+
+	public static int getTimeForP(Integer[][] myArray, int P)
+	{
+		return myArray[1][P-1];
+	}
+
+			/*DEBUG
+			bw.write(Arrays.deepToString(arivedSortedT));
+			bw.write(Arrays.deepToString(selectedSortedT));
+			bw.write(Arrays.deepToString(finishedSortedT));
+			bw.write("AllSortTs("+Arrays.toString(sortedTimes)+")");
+			*/
+			/* DEBUG how to write to a file
+			bw.write(processCount+" processes\n");
+			bw.write("Using First Come First Served\n\n");
+			int P=1;
+			bw.write("Time "+arivedSortedT[1][P-1]+": P"+arivedSortedT[0][P-1]+" arrived\n");
+			bw.write("Time "+selectedSortedT[1][P-1]+": P"+selectedSortedT[0][P-1]+" selected (burst "+arivalBurst[P][0]+")");
+			*/
+			//If P2 arrives before P1 is finished then print it
+
+
 
 	public static void processes()
 	{
@@ -253,3 +481,42 @@ public class processes
 			System.out.println("Time "+timeList[p][1]+": P"+p+" selected (burst "+burst+")" );
 			System.out.println("Time "+timeList[p][2]+": P"+p+" finished");
 			*/
+
+/* generic print to file
+	public static void printToFile(Integer[][] arivedSortedT, Integer[][] selectedSortedT, Integer[][] finishedSortedT, Integer[] sortedTimes)
+	{
+		try {
+
+			File file = new File("myTestFile.txt");
+
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write("Wasaaa");
+			///////////////////////////////////////////////////////
+			// 	Output to file here
+			///////////////////////////////////////////////////////
+
+			//////////////////////////////////////////////////////
+			// 	End output to file
+			///////////////////////////////////////////////////////
+			bw.close();
+
+			System.out.println("Done");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}// end of file write method
+
+*/
+
+	/*
+				int[][] ia = new int[5][6];
+			System.out.println(ia.length);
+			System.out.println(ia[0].length);
+	*/
