@@ -1,3 +1,5 @@
-Wasaaa
 Time 0: P2 arrived
+Time 0: P2 selected (burst 9)
 Time 3: P1 arrived
+Time 3: P1 selected (burst 5)
+Time 3: P1 finished

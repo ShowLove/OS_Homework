@@ -26,6 +26,8 @@ public class processes
 		//Sorted arival, select and finished times
 		// [P_T][P] P_T: row:  0 = process # P, 1 = time for process P
 		// [P_T][P] P: column: time for process 'P'
+		// next sorted process 	[0][0]
+		// next sorted time 	[1][0]
 		Integer[][] burstSortedT = new Integer[2][processCount];
 		Integer[][] arivedSortedT = new Integer[2][processCount];
 		//Integer[] arrivedProcesses = new Integer[processCount]
@@ -56,6 +58,11 @@ public class processes
 				file.createNewFile();
 			}
 
+			int currentBurstT = 0; int currentP = 0;
+			int newBurstT = 0;
+			int prevSelectT = 0;
+			int prevSelectP = 1;
+
 			FileWriter fw = new FileWriter(file.getAbsoluteFile());
 			BufferedWriter bw = new BufferedWriter(fw);
 			///////////////////////////////////////////////////////
@@ -65,14 +72,50 @@ public class processes
 			{
 				//Keep track of all arrived processes
 				process = pThatArrivedAtThisT(arivedSortedT, t, processCount);
+
 				if(process != 0)	//A process has arrived
 				{
-					//System.out.println(process+ "arrived at"+ t); DEBUG
 					arrivedProcesses.add(process);
 					printArrived(bw, t, process);
+
+					//Get burst time for recently arrived process
+					if( burstTimeForP(burstSortedT, process, processCount) != 0)
+						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+
+					//Check if this is the lowest burst and is worthy of being selected
+					//If we get process = 0 this just won't go. That shouldn't happen though
+					if(process == shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount) )
+					{
+						printSelected(bw, t, process, currentBurstT);
+						updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t, prevSelectT);
+						prevSelectP = process;
+
+						//currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+
+						if( weCanFinishThis(arrivedProcesses, arivedSortedT, processCount, process, t, currentBurstT) )
+						{
+							printFinished(bw, t, process);
+						}
+
+						//Print sorted burst/arrival times 	DEBUG
+						System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
+						System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
+					} //There is another arrived process with a shorter burst
+					else
+					{	//DEBUG check my usage of tempP if bug pops up
+						int tempP = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						printSelected(bw, t, tempP, currentBurstT);
+						updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t, prevSelectT);
+						prevSelectP = process;
+					}
+
+					//If nothing arrives before the burst time deminishes P finishes
+
+					//System.out.println(process+ "arrived at"+ t+ "burstTime" + currentBurstT); DEBUG
 				}
 				
 			}
+
 			//////////////////////////////////////////////////////
 			// 	End output to file
 			///////////////////////////////////////////////////////
@@ -85,6 +128,53 @@ public class processes
 		}
 		//Print Desired Output to text file
 		//printToFileFCFS(arivedSortedT, selectedSortedT, finishedSortedT, sortedTimes, runFor, processCount);
+
+	}
+
+	public static boolean weCanFinishThis(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount, int process, int t, int currentBurstT)
+	{
+		//Once selected check if you can finish by 
+		//seeing if there is an arrival before your burst deminishes
+		int remainingBurst = currentBurstT;
+
+		//If arivedSortedT has a t greater than (your remaining burst) + currentT
+		//you cant finish
+
+
+		for(int i = 0; i < processCount; i++)
+		{
+			if( (myArray[1][i] > t) && (myArray[1][i] < (remainingBurst + t)) )
+			{
+				System.out.println("a_"+myArray[1][i]+" r_"+remainingBurst+" t_"+t);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static void updateBTime( Integer[][] myArray, int currentBurstT, int  process, int  processCount, int t, int prevSelectT)
+	{
+		int newBurstT = burstTimeForP(myArray, process, processCount) - (t - prevSelectT);
+		/* DEBUG I might need this later
+		if(newBurstT < 0)
+			return newBurstT; 
+			*/
+
+		for( int i = 0; i < processCount; i++)
+		{
+			if(process == myArray[0][i])
+				myArray[1][i] = newBurstT;
+		}
+	}
+
+	public static int shortestB_PFromArrivedPs(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount)
+	{
+		for(int i = 0; i < processCount; i++)
+		{
+			if(arrivedProcesses.contains(myArray[0][i]))
+				return myArray[0][i];
+		}
+		return 0;
 	}
 
 	public static int pThatArrivedAtThisT(Integer[][] myArray, int t, int processCount)
@@ -93,6 +183,16 @@ public class processes
 		{
 			if( myArray[1][i] == t )
 				return myArray[0][i];
+		}
+		return 0;
+	}
+
+	public static int burstTimeForP(Integer[][] myArray, int p, int processCount)
+	{
+		for(int i = 0; i < processCount; i++)
+		{
+			if( myArray[0][i] == p )
+				return myArray[1][i];
 		}
 		return 0;
 	}
