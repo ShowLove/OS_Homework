@@ -17,10 +17,11 @@ P2 wait 21 turnaround 24
 P3 wait 23 turnaround 26
 
 ///////////////////////////////////////
-P1 arrived; print P1
+1.	P1 arrived; print P1
 
-Print all that arrive before 
-(P1-1) is finished
+2.	Print all that arrive before (P1-1) is finished
+		P cant be finished because (P-1) isn't finished
+		P can only be selected next because it's first come first serve
 
 print (P1-1) finished
 

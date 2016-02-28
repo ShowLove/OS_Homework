@@ -10,6 +10,8 @@ import java.io.IOException;
 
 public class processes
 {
+	//if x is process number
+	//x,0--> Arrival //x,1--> burst
 	public static int[][] arivalBurst;
 
 	public static void main( String args[] )
@@ -17,7 +19,126 @@ public class processes
 		processes();
 	}
 
+	public static void runsjf(int runFor, int processCount)
+	{
 
+
+		//Sorted arival, select and finished times
+		// [P_T][P] P_T: row:  0 = process # P, 1 = time for process P
+		// [P_T][P] P: column: time for process 'P'
+		Integer[][] burstSortedT = new Integer[2][processCount];
+		Integer[][] arivedSortedT = new Integer[2][processCount];
+		//Integer[] arrivedProcesses = new Integer[processCount]
+
+		//Create an empty array list with an initial capacity
+   		ArrayList<Integer> arrivedProcesses = new ArrayList<Integer>(processCount);
+   		//arrlist.add(20); list will contain arrived processes
+   		//arrlist.contains(30);	return true or false if it contains it
+
+		int nowTime = 0; int process = 0;
+
+
+		// use 1 for burst, see method declaration
+		sortTimeWithP(burstSortedT, processCount, 1);
+		// use 0 for burst, see method declaration
+		sortTimeWithP(arivedSortedT, processCount, 0);
+
+		//Print sorted burst/arrival times 	DEBUG
+		System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
+		System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
+
+		try {
+
+			File file = new File("myTestFile.txt");
+
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			///////////////////////////////////////////////////////
+			// 	Output to file here
+			///////////////////////////////////////////////////////
+			for(int t = nowTime; t <= runFor; t++)
+			{
+				//Keep track of all arrived processes
+				process = pThatArrivedAtThisT(arivedSortedT, t, processCount);
+				if(process != 0)	//A process has arrived
+				{
+					//System.out.println(process+ "arrived at"+ t); DEBUG
+					arrivedProcesses.add(process);
+					printArrived(bw, t, process);
+				}
+				
+			}
+			//////////////////////////////////////////////////////
+			// 	End output to file
+			///////////////////////////////////////////////////////
+			bw.close();
+
+			System.out.println("Done");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//Print Desired Output to text file
+		//printToFileFCFS(arivedSortedT, selectedSortedT, finishedSortedT, sortedTimes, runFor, processCount);
+	}
+
+	public static int pThatArrivedAtThisT(Integer[][] myArray, int t, int processCount)
+	{
+		for(int i = 0; i < processCount; i++)
+		{
+			if( myArray[1][i] == t )
+				return myArray[0][i];
+		}
+		return 0;
+	}
+
+	///////////////////////////////////////////////////////////////////////
+	//Sort double array A[P][T], y = Time associated with process P
+	//Sorted according to T
+	//myArray = end product sorted, 	dataArray = data we are sorting
+	///////////////////////////////////////////////////////////////////////
+	public static void sortTimeWithP(Integer[][] myArray, Integer[][] dataArray, int processCount)
+	{
+		for(int p =1; p <= processCount; p++ )
+		{
+			myArray[0][p-1] = p;				  //process
+			myArray[1][p-1] = dataArray[p][1]; //time for that process
+		}
+
+		bubbleSort(myArray);
+	}
+	//Method overloading: used if sorting arivalBurst: 
+	// Use ArrivalOrBurst = 0 (arrival); ArrivalOrBurst = 1 (burst)
+	public static void sortTimeWithP(Integer[][] myArray, int processCount, int ArrivalOrBurst)
+	{
+		//////////arivalBurst/////////////////////
+		//if x is process number
+		//x,0--> Arrival //x,1--> burst
+		///////////////////////////////////////
+		if( ArrivalOrBurst == 1)
+		{
+			for(int p =1; p <= processCount; p++ )
+			{
+				myArray[0][p-1] = p;				  //process
+				myArray[1][p-1] = arivalBurst[p][1]; //burst for that process
+			}
+		}
+		else if( ArrivalOrBurst ==  0)
+		{
+			for(int p =1; p <= processCount; p++ )
+			{
+				myArray[0][p-1] = p;				  //process
+				myArray[1][p-1] = arivalBurst[p][0]; //arrival for that process
+			}
+		}
+
+		bubbleSort(myArray);
+	}
 
 	public static void runfcfs(int runFor, int processCount)
 	{
@@ -88,10 +209,10 @@ public class processes
 		Arrays.sort(sortedTimes);
 
 		//Print Desired Output to text file
-		printToFile(arivedSortedT, selectedSortedT, finishedSortedT, sortedTimes, runFor, processCount);
+		printToFileFCFS(arivedSortedT, selectedSortedT, finishedSortedT, sortedTimes, runFor, processCount);
 	}
 
-	public static void printToFile(Integer[][] arivedSortedT, Integer[][] selectedSortedT, Integer[][] finishedSortedT, Integer[] sortedTimes, int runFor, int processCount)
+	public static void printToFileFCFS(Integer[][] arivedSortedT, Integer[][] selectedSortedT, Integer[][] finishedSortedT, Integer[] sortedTimes, int runFor, int processCount)
 	{
 		try {
 
@@ -107,36 +228,19 @@ public class processes
 			///////////////////////////////////////////////////////
 			// 	Output to file here
 			///////////////////////////////////////////////////////
-			//arivedSortedT, selectedSortedT, finishedSortedT
-			//bw.write("Time "+arivedSortedT[1][P-1]+": P"+arivedSortedT[0][P-1]+" arrived\n");
-			//bw.write("Time "+selectedSortedT[1][P-1]+": P"+selectedSortedT[0][P-1]+" selected (burst "+arivalBurst[P][0]+")");
-			//TIME arivedSortedT[1][P-1]	P arivedSortedT[0][P-1]
-			/* DEBUG
-			System.out.println("Before");
-			System.out.println(Arrays.deepToString(arivedSortedT));
-			System.out.println(Arrays.deepToString(selectedSortedT));
-			System.out.println(Arrays.deepToString(finishedSortedT));
-			invalidateItem(arivedSortedT);
-			invalidateItem(selectedSortedT);
-			invalidateItem(selectedSortedT);
-			findNextValidP(selectedSortedT);
-			System.out.println("After");
-			System.out.println(Arrays.deepToString(arivedSortedT));
-			System.out.println(Arrays.deepToString(selectedSortedT));
-			System.out.println(Arrays.deepToString(finishedSortedT));
-			System.out.println("ValidOnSelectNext_"+findNextValidP(selectedSortedT));
-			*/
+			//Using arivedSortedT, selectedSortedT, finishedSortedT
+
 
 			//My algorithm 
-/*
-1.	P1 arrived; print P1
-2.	Print all that arrive before (P1-1) is finished
-3.	print (P1-1) finished
-4.	print P1 selected
-5.	print all that arrive before P1 Finished
-6.	print P1 finished
-7.	go to next arrived in the queue and start over
-*/
+			/*
+			1.	P1 arrived; print P1
+			2.	Print all that arrive before (P1-1) is finished
+			3.	print (P1-1) finished
+			4.	print P1 selected
+			5.	print all that arrive before P1 Finished
+			6.	print P1 finished
+			7.	go to next arrived in the queue and start over
+			*/
 			
 			int tA = 0, tS = 0, tF = 0;
 			int pA = 0, pS = 0, pF = 0;
@@ -144,11 +248,16 @@ public class processes
 
 
 			printHeaderFCFS(processCount, bw);
+
+			/* DEBUG
+			System.out.println(Arrays.deepToString(arivedSortedT));
+			System.out.println(Arrays.deepToString(selectedSortedT));
+			System.out.println(Arrays.deepToString(finishedSortedT));
+			*/
 			////////////////////////////////////////////////////////
 			//Print all that have arrived been selected or finished
 			///////////////////////////////////////////////////////
-
-			while(pF != 999 )
+			while(pF != 999 )	//999 is my error code ("I still think in c")
 			{
 				//1.	P1 arrived; print P1 arrived
 				pA = findNextValidP(arivedSortedT);
@@ -203,10 +312,6 @@ public class processes
 						}
 					}
 				}
-				System.out.println(Arrays.deepToString(arivedSortedT));
-				System.out.println(Arrays.deepToString(selectedSortedT));
-				System.out.println(Arrays.deepToString(finishedSortedT));
-
 				//6.	print P1 finished
 				pF = findNextValidP(finishedSortedT);
 				if( pF != 999 )
@@ -225,17 +330,25 @@ public class processes
 				}
 			}// end of print a s f while loop
 
-			/* DEBUG
-			System.out.println(Arrays.deepToString(arivedSortedT));
-			System.out.println(Arrays.deepToString(selectedSortedT));
-			System.out.println(Arrays.deepToString(finishedSortedT));
-			*/
+			//Print the time when everything finished
+			printFinishedAt(bw, finishedSortedT);
+
+			int wait = 0;
+			int turnaround = 0;
+			int p = 0;
+
+			//Print wait and turnaround times
+			for(int i = 0; i < arivedSortedT[0].length; i++)
+			{
+				p = i;
+				wait = selectedSortedT[1][p] - arivedSortedT[1][p];
+				turnaround = finishedSortedT[1][p] - arivedSortedT[1][p];
+				printWaitTurnaroundT(bw, p+1, wait, turnaround);
+			}
 			//////////////////////////////////////////////////////
 			// 	End output to file
 			///////////////////////////////////////////////////////
 			bw.close();
-
-			System.out.println("Done");
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -264,6 +377,24 @@ public class processes
 	{
 		try {
 			bw.write("Time "+time+": P"+process+" finished\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printFinishedAt(BufferedWriter bw, Integer[][] myArray)
+	{
+		try {
+			bw.write("Finished at time "+myArray[1][myArray[0].length-1]+"\n\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printWaitTurnaroundT(BufferedWriter bw, int p, int wait, int turnaround)
+	{
+		try {
+			bw.write("P"+p+" wait "+wait+" turnaround "+turnaround+"\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -398,21 +529,28 @@ public class processes
 	        } //End of while loop
 
 	        //DEBUG OUTPUT
+	        /*
             System.out.println("p_"+processCount+" r_"+runFor+" u_"+use);
             System.out.println(" q_"+quantum+" proCount_"+processCount);
             System.out.println(" arrival_"+arrival+" burst_"+burst);
             System.out.println(Arrays.deepToString(arivalBurst));
+            */
             input.close();
 
             ///////////////////////////
             //process information here
             ///////////////////////////
 
-            //if fcfs
+            //Choose Job logic
             if(use.equals("fcfs"))
             {
-            	System.out.println("use fcfs!!!");
+            	System.out.println("use fcfs!!!");	//DEBUG
             	runfcfs(runFor, processCount);
+            }
+            if(use.equals("sjf"))
+            {
+            	System.out.println("use sjf!!!");	//DEBUG
+            	runsjf( runFor, processCount);
             }
 
         } 
@@ -476,11 +614,6 @@ public class processes
             System.out.println(Arrays.deepToString(arivalBurst));
 */
 
-			/* DEBUG  Line 57
-			System.out.println("Time "+timeList[p][0]+": P"+p+" arrived");
-			System.out.println("Time "+timeList[p][1]+": P"+p+" selected (burst "+burst+")" );
-			System.out.println("Time "+timeList[p][2]+": P"+p+" finished");
-			*/
 
 /* generic print to file
 	public static void printToFile(Integer[][] arivedSortedT, Integer[][] selectedSortedT, Integer[][] finishedSortedT, Integer[] sortedTimes)
