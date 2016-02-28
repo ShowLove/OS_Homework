@@ -89,12 +89,16 @@ public class processes
 						printSelected(bw, t, process, currentBurstT);
 						updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t, prevSelectT);
 						prevSelectP = process;
+						prevSelectT = t;
 
-						//currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+						//DEBUG watch out for negatives
+						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
 
-						if( weCanFinishThis(arrivedProcesses, arivedSortedT, processCount, process, t, currentBurstT) )
+						//Check if we can finish running this process
+						if( weCanFinishThis(arivedSortedT, processCount, process, t, currentBurstT) )
 						{
 							printFinished(bw, t, process);
+							updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t+currentBurstT, prevSelectT);
 						}
 
 						//Print sorted burst/arrival times 	DEBUG
@@ -107,11 +111,24 @@ public class processes
 						printSelected(bw, t, tempP, currentBurstT);
 						updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t, prevSelectT);
 						prevSelectP = process;
+						prevSelectT = t;
 					}
 
-					//If nothing arrives before the burst time deminishes P finishes
+					//Print sorted burst/arrival times 	DEBUG
+					System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
+					System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
 
-					//System.out.println(process+ "arrived at"+ t+ "burstTime" + currentBurstT); DEBUG
+					//Check if all Ps arrived And at least one still has burst
+					//If so sequentially print processes with shortest burst untill all are finished
+					int greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+					//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
+					if(allPsHaveArrived(arrivedProcesses, processCount) && greatestBurst > 0)
+					{
+						System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
+						int shortestBurst = shortestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+					}
+
 				}
 				
 			}
@@ -131,16 +148,23 @@ public class processes
 
 	}
 
-	public static boolean weCanFinishThis(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount, int process, int t, int currentBurstT)
+	public static boolean allPsHaveArrived(ArrayList<Integer> arrivedProcesses, int processCount)
 	{
-		//Once selected check if you can finish by 
+		if(arrivedProcesses.size() == processCount)
+		{
+			System.out.println("All Processes have arrived"); //DEBUG
+			return true;
+		}
+		return false;
+	}
+
+	public static boolean weCanFinishThis( Integer[][] myArray, int processCount, int process, int t, int currentBurstT)
+	{
+		//Once selected, check if you can finish by 
 		//seeing if there is an arrival before your burst deminishes
 		int remainingBurst = currentBurstT;
 
-		//If arivedSortedT has a t greater than (your remaining burst) + currentT
-		//you cant finish
-
-
+		//If nothing arrives between now and the end of your burst we can finish
 		for(int i = 0; i < processCount; i++)
 		{
 			if( (myArray[1][i] > t) && (myArray[1][i] < (remainingBurst + t)) )
@@ -167,12 +191,34 @@ public class processes
 		}
 	}
 
+	//Process with shortest burst from arrived burst
 	public static int shortestB_PFromArrivedPs(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount)
 	{
 		for(int i = 0; i < processCount; i++)
 		{
 			if(arrivedProcesses.contains(myArray[0][i]))
 				return myArray[0][i];
+		}
+		return 0;
+	}
+
+	//Shortest Bursts arrived burst
+	public static int shortestP_BFromArrivedPs(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount)
+	{
+		for(int i = 0; i < processCount; i++)
+		{
+			if(arrivedProcesses.contains(myArray[0][i]))
+				return myArray[1][i];
+		}
+		return 0;
+	}
+	//Greatest Bursts arrived burst
+	public static int greatestP_BFromArrivedPs(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount)
+	{
+		for(int i = processCount - 1; i > 0; i--)
+		{
+			if(arrivedProcesses.contains(myArray[0][i]))
+				return myArray[1][i];
 		}
 		return 0;
 	}
