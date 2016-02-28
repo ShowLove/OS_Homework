@@ -97,13 +97,11 @@ public class processes
 						//Check if we can finish running this process
 						if( weCanFinishThis(arivedSortedT, processCount, process, t, currentBurstT) )
 						{
-							printFinished(bw, t, process);
+							printFinished(bw, t+currentBurstT, process);
 							updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t+currentBurstT, prevSelectT);
+							t = t+currentBurstT; //Update time 
 						}
 
-						//Print sorted burst/arrival times 	DEBUG
-						System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
-						System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
 					} //There is another arrived process with a shorter burst
 					else
 					{	//DEBUG check my usage of tempP if bug pops up
@@ -124,9 +122,25 @@ public class processes
 					//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
 					if(allPsHaveArrived(arrivedProcesses, processCount) && greatestBurst > 0)
 					{
-						System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
+
+						//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
 						int shortestBurst = shortestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-						process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						process = greatestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+
+						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+
+						//newBurstT = burstTimeForP(myArray, process, processCount) - (t - prevSelectT); DEBUG
+						//prevSelectT is messed up
+						printSelected(bw, t, process, currentBurstT);
+						updateBTimeToZero(burstSortedT, process, processCount);
+						printFinished(bw, t+currentBurstT, process);
+						t = t+currentBurstT;
+
+						//Print sorted burst/arrival times 	DEBUG
+						System.out.println("Recursive _t"+t+" p_"+process);
+						System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
+						System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
+
 					}
 
 				}
@@ -191,6 +205,16 @@ public class processes
 		}
 	}
 
+	public static void updateBTimeToZero( Integer[][] myArray, int  process, int  processCount)
+	{
+
+		for( int i = 0; i < processCount; i++)
+		{
+			if(process == myArray[0][i])
+				myArray[1][i] = 0;
+		}
+	}
+
 	//Process with shortest burst from arrived burst
 	public static int shortestB_PFromArrivedPs(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount)
 	{
@@ -212,13 +236,23 @@ public class processes
 		}
 		return 0;
 	}
-	//Greatest Bursts arrived burst
+	//Greatest Bursts arrived from arrived processes
 	public static int greatestP_BFromArrivedPs(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount)
 	{
 		for(int i = processCount - 1; i > 0; i--)
 		{
 			if(arrivedProcesses.contains(myArray[0][i]))
 				return myArray[1][i];
+		}
+		return 0;
+	}
+	//Process with greatest Bursts from arrived Processes
+	public static int greatestB_PFromArrivedPs(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int processCount)
+	{
+		for(int i = processCount - 1; i > 0; i--)
+		{
+			if(arrivedProcesses.contains(myArray[0][i]))
+				return myArray[0][i];
 		}
 		return 0;
 	}
