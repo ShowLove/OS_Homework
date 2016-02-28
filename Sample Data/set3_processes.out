@@ -13,3 +13,18 @@ Finished at time 15
 
 P1 wait 0 turnaround 5
 P2 wait 5 turnaround 14
+
+//
+1. a1 @ t: 	get a priority from burst times on all arivals @ t
+1a. check if next in priority Burst has arrived until you find an arrived burst
+1b	check burst que and see if next up has arrived
+2. s1:		when you find that mentioned in 1a select it "s1"
+2a.			check if s1 finished befor next arrival
+3. a2:		go to next arrived a2
+4. s1:		calc updated burst for process s1
+5. return to 1 and repeat
+//
+
+//1 expanded
+Null arrived and burst array when process finishes
+

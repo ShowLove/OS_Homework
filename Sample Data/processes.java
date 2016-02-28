@@ -122,25 +122,39 @@ public class processes
 					//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
 					if(allPsHaveArrived(arrivedProcesses, processCount) && greatestBurst > 0)
 					{
+						while(greatestBurst > 0)
+						{
+							greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
 
-						//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
-						int shortestBurst = shortestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-						process = greatestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+							//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
+							int shortestBurst = shortestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+							process = greatestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
 
-						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+							currentBurstT = burstTimeForP(burstSortedT, process, processCount);
 
-						//newBurstT = burstTimeForP(myArray, process, processCount) - (t - prevSelectT); DEBUG
-						//prevSelectT is messed up
-						printSelected(bw, t, process, currentBurstT);
-						updateBTimeToZero(burstSortedT, process, processCount);
-						printFinished(bw, t+currentBurstT, process);
-						t = t+currentBurstT;
+							//newBurstT = burstTimeForP(myArray, process, processCount) - (t - prevSelectT); DEBUG
+							//prevSelectT is messed up
+							printSelected(bw, t, process, currentBurstT);
+							updateBTimeToZero(burstSortedT, process, processCount);
+							printFinished(bw, t+currentBurstT, process);
+							t = t+currentBurstT;
 
+							greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						}
+
+						while(t < runFor )
+						{
+							bw.write("Time "+t+": IDLE\n");
+							t++;
+						}
+
+						bw.write("Finished at time "+runFor);
+/*
 						//Print sorted burst/arrival times 	DEBUG
 						System.out.println("Recursive _t"+t+" p_"+process);
 						System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
 						System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
-
+*/
 					}
 
 				}
