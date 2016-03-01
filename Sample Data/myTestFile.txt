@@ -14,6 +14,10 @@ Time 10: P1 selected (burst 7)
 Time 17: P1 finished
 Time 17: P3 selected (burst 9)
 Time 26: P3 finished
+Time 26: IDLE
+Time 27: IDLE
+Time 28: IDLE
+Time 29: IDLE
 Finished at time 30
 
 P1 wait 9 turnaround 17
