@@ -286,102 +286,192 @@ public class processes
 			// /*boolean*/ = weFinishedPrevSelectedP(finished, processCount, prevSelectP)
 			int firstRun = 1;
 
-			//When last process running didn't finish
-			while(currentBurstT > 0 && t <= runFor)
+			boolean finishedPrevSelectedP = weFinishedPrevSelectedP(finished,processCount, prevSelectP);
+
+			if( finishedPrevSelectedP )
 			{
-				bubbleSortFinal(burstSortedT);
-				bubbleSortFinal(arivedSortedT);
-
-				//System.out.println("begin bt_"+currentBurstT+" t_"+t+" P_"+process+"runFor"+runFor);	//DEBUG
-
-				if( firstRun == 1)
-				{
-					//print finished
-					process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-					if(process != 0)
-					{
-						if( !isPFinished(finished, process, processCount) )
-						{	System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
-							currentBurstT = burstTimeForP(burstSortedT, process, processCount);
-							printFinished(bw, prevSelectT+currentBurstT, process);
-							insertFinishedData(finished, process, t+currentBurstT, processCount);
-							updateBTimeToZero(burstSortedT, process, processCount);
-							t = prevSelectT+currentBurstT;  //t++ is why -1
-							System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
-						}
-					}
-
-					bubbleSortFinal(burstSortedT);
-					bubbleSortFinal(arivedSortedT);
-
-					//print selected
-					process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-					if(process != 0 && !isPFinished(finished, process, processCount) )
-					{
-
-						bubbleSort(burstSortedT);
-						bubbleSort(arivedSortedT);
-
-						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
-						printSelected(bw, t, process, currentBurstT);	//DEBUG
-						System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
-						//System.out.println("Burst:"+Arrays.deepToString(burstSortedT));			//DEBUG
-						t = prevSelectT+currentBurstT;	//account for t++ (-1), on firstR we dont want this
-						prevSelectP = process;
-						prevSelectT = t;
-						System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
-					}
-
-				}
-				if( firstRun == 0 )
-				{
-
-					//print finished
-					process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-					if(process != 0)
-					{
-						if( !isPFinished(finished, process, processCount) )
-						{	System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
-							currentBurstT = burstTimeForP(burstSortedT, process, processCount);
-							printFinished(bw, prevSelectT+currentBurstT - 1, process);
-							insertFinishedData(finished, process, t+currentBurstT, processCount);
-							updateBTimeToZero(burstSortedT, process, processCount);
-							t = prevSelectT+currentBurstT;  //t++ is why -1
-							System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
-						}
-					}
-
-					bubbleSortFinal(burstSortedT);
-					bubbleSortFinal(arivedSortedT);
-
-					//print selected
-					process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-					if(process != 0 && !isPFinished(finished, process, processCount) )
-					{
-
-						bubbleSort(burstSortedT);
-						bubbleSort(arivedSortedT);
-
-						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
-						printSelected(bw, t - 1, process, currentBurstT);	//DEBUG
-						System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
-						//System.out.println("Burst:"+Arrays.deepToString(burstSortedT));			//DEBUG
-						//t = prevSelectT+currentBurstT;	//account for t++ (-1), on firstR we dont want this
-						prevSelectP = process;
-						prevSelectT = t;
-						System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG	
-					}			
-				}
-
-				//Check to see if we still need to be in the while loop
-				//process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-				//currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+				//Check if all Ps arrived And at least one still has burst
+				//If so sequentially print processes with shortest burst untill all are finished
 				greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-				//System.out.println("End gb_"+greatestBurst+" t_"+t+" P_"+process);	//DEBUG
-				t++;
-				firstRun = 0;
+				//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
+				if(allPsHaveArrived(arrivedProcesses, processCount) && (greatestBurst > 0) )
+				{
 
-			}
+					while(greatestBurst > 0)
+					{
+						greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+
+						//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
+						int shortestBurst = shortestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						process = greatestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+
+						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+
+						//newBurstT = burstTimeForP(myArray, process, processCount) - (t - prevSelectT); DEBUG
+						//prevSelectT is messed up
+						printSelected(bw, t, process, currentBurstT);
+						//keep track of first selected processes
+						insertFirstSelectedData(firstSelected, process, t, processCount);
+
+						updateBTimeToZero(burstSortedT, process, processCount);
+
+						printFinished(bw, t+currentBurstT, process);
+						insertFinishedData(finished, process, t+currentBurstT, processCount);
+						t = t+currentBurstT;
+
+						greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+					}
+
+					while(t < runFor )
+					{
+						bw.write("Time "+t+": IDLE\n");
+						t++;
+					}
+
+					bw.write("Finished at time "+runFor+"\n\n");
+
+					bubbleSortP(firstSelected);
+					bubbleSortP(arivedSortedT);
+					bubbleSortP(finished);
+
+
+					for(int i = 0; i < arivedSortedT[0].length; i++)
+					{
+						int p = i;
+						//System.out.println("P_"+(p+1)+" B_"+arivalBurst[p+1][1]+" f_"+finished[1][p]+" A_"+arivedSortedT[1][p]);  // DEBUG
+						int wait = finished[1][p] - arivedSortedT[1][p] - arivalBurst[p+1][1];
+						int turnaround = wait + arivalBurst[p+1][1];
+						printWaitTurnaroundT(bw, p+1, wait, turnaround);
+					}						
+				}//END OF ALL P'S HAVE ARRIVED IF
+			}//END finishedPrevSelectedP
+
+			if( !finishedPrevSelectedP )
+			{
+				//When last process running didn't finish
+				while(currentBurstT > 0 && t <= runFor)
+				{
+					bubbleSortFinal(burstSortedT);
+					bubbleSortFinal(arivedSortedT);
+
+					//System.out.println("begin bt_"+currentBurstT+" t_"+t+" P_"+process+"runFor"+runFor);	//DEBUG
+
+					if( firstRun == 1)
+					{
+						//print finished
+						process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						if(process != 0)
+						{
+							if( !isPFinished(finished, process, processCount) )
+							{	System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
+								currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+								printFinished(bw, prevSelectT+currentBurstT, process);
+								insertFinishedData(finished, process, t+currentBurstT, processCount);
+								updateBTimeToZero(burstSortedT, process, processCount);
+								t = prevSelectT+currentBurstT;  //t++ is why -1
+								System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
+							}
+						}
+
+						bubbleSortFinal(burstSortedT);
+						bubbleSortFinal(arivedSortedT);
+
+						//print selected
+						process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						if(process != 0 && !isPFinished(finished, process, processCount) )
+						{
+
+							bubbleSort(burstSortedT);
+							bubbleSort(arivedSortedT);
+
+							currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+							printSelected(bw, t, process, currentBurstT);	//DEBUG
+							System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
+							//System.out.println("Burst:"+Arrays.deepToString(burstSortedT));			//DEBUG
+							t = prevSelectT+currentBurstT;	//account for t++ (-1), on firstR we dont want this
+							prevSelectP = process;
+							prevSelectT = t;
+							System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
+						}
+
+					}
+					if( firstRun == 0 )
+					{
+
+						//print finished
+						process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						if(process != 0)
+						{
+							if( !isPFinished(finished, process, processCount) )
+							{	System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
+								currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+								printFinished(bw, prevSelectT+currentBurstT - 1, process);
+								insertFinishedData(finished, process, t+currentBurstT, processCount);
+								updateBTimeToZero(burstSortedT, process, processCount);
+								t = prevSelectT+currentBurstT;  //t++ is why -1
+								System.out.println("Finished bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
+							}
+						}
+
+						bubbleSortFinal(burstSortedT);
+						bubbleSortFinal(arivedSortedT);
+
+						//print selected
+						process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+						if(process != 0 && !isPFinished(finished, process, processCount) )
+						{
+
+							bubbleSort(burstSortedT);
+							bubbleSort(arivedSortedT);
+
+							currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+							printSelected(bw, t - 1, process, currentBurstT);	//DEBUG
+							System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG
+							//System.out.println("Burst:"+Arrays.deepToString(burstSortedT));			//DEBUG
+							//t = prevSelectT+currentBurstT;	//account for t++ (-1), on firstR we dont want this
+							prevSelectP = process;
+							prevSelectT = t;
+							System.out.println("Select bt_"+currentBurstT+" t_"+t+" P_"+process);	//DEBUG	
+						}			
+					}
+
+					//Check to see if we still need to be in the while loop
+					//process = shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+					//currentBurstT = burstTimeForP(burstSortedT, process, processCount);
+					greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
+					//System.out.println("End gb_"+greatestBurst+" t_"+t+" P_"+process);	//DEBUG
+					t++;
+					firstRun = 0;
+
+				}//END When last process running didn't finish while
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+				while(t < runFor )
+				{
+					bw.write("Time "+t+": IDLE\n");
+					t++;
+				}
+
+				bw.write("Finished at time "+runFor+"\n\n");
+
+				bubbleSortP(firstSelected);
+				bubbleSortP(arivedSortedT);
+				bubbleSortP(finished);
+
+
+				for(int i = 0; i < arivedSortedT[0].length; i++)
+				{
+					int p = i;
+					//System.out.println("P_"+(p+1)+" B_"+arivalBurst[p+1][1]+" f_"+finished[1][p]+" A_"+arivedSortedT[1][p]);  // DEBUG
+					int wait = finished[1][p] - arivedSortedT[1][p] - arivalBurst[p+1][1];
+					int turnaround = wait + arivalBurst[p+1][1];
+					printWaitTurnaroundT(bw, p+1, wait, turnaround);
+				}	
+
+			}//END previous selected didn't finish
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 			//////////////////////////////////////////////////////
 			// 	End output to file
