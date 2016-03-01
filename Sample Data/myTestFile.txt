@@ -16,7 +16,7 @@ Time 17: P3 selected (burst 9)
 Time 26: P3 finished
 Finished at time 30
 
-P1 wait -1 turnaround 7
-P2 wait 7 turnaround 11
-P3 wait 8 turnaround 17
-P4 wait 20 turnaround 25
+P1 wait 9 turnaround 17
+P2 wait 0 turnaround 4
+P3 wait 15 turnaround 24
+P4 wait 2 turnaround 7

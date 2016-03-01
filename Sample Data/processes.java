@@ -16,6 +16,7 @@ javap processes
   public processes();
   public static void main(java.lang.String[]);
   public static void runsjf(int, int);
+  public static boolean weFinishedPrevSelectedP(java.lang.Integer[][], int, int);
   public static boolean nextIsSelect(java.util.ArrayList<java.lang.Integer>, java.lang.Integer[][], int, int);
   public static void debug_pSelected(int, int, int, java.lang.Integer[][], java.lang.Integer[][], java.lang.Integer[][], java.lang.Integer[][], int, int, int);
   public static int pSelected(java.io.BufferedWriter, int, int, int, java.lang.Integer[], java.lang.Integer[][], java.lang.Integer[][], java.lang.Integer[][], java.lang.Integer[][], int, int, int);
@@ -458,12 +459,20 @@ public class processes
 				bubbleSortP(arivedSortedT);
 				bubbleSortP(finished);
 
+				//finished[1][p] - arivedSortedT[1][p] - arivalBurst[p+1][1];
+				timeThisPArrived(arivedSortedT,process,processCount);
+				System.out.println("Finished:"+Arrays.deepToString(finished));	//DEBUG
+				System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));	//DEBUG
+				System.out.println("arivalBurst:"+Arrays.deepToString(arivalBurst));	//DEBUG
+
 
 				for(int i = 0; i < arivedSortedT[0].length; i++)
 				{
 					int p = i;
-					//System.out.println("P_"+(p+1)+" B_"+arivalBurst[p+1][1]+" f_"+finished[1][p]+" A_"+arivedSortedT[1][p]);  // DEBUG
-					int wait = finished[1][p] - arivedSortedT[1][p] - arivalBurst[p+1][1];
+					//System.out.println("P_"+(p+1)+" A_"+arivedSortedT[1][P]+" f_"+finished[1][p]+" A_"+arivedSortedT[1][p]);  // DEBUG
+					//System.out.println("P_"+(p+1)+" f_"+finished[1][p]+" A_"+arivedSortedT[1][P]+" A_"+arivedSortedT[1][p]);  // DEBUG	
+					//int wait = (timeThisPFinished(finished,p,processCount)-2) - timeThisPArrived(arivedSortedT,p,processCount) - arivalBurst[p+1][1];
+					int wait = (finished[1][p]-2) - arivedSortedT[1][p]- arivalBurst[p+1][1];
 					int turnaround = wait + arivalBurst[p+1][1];
 					printWaitTurnaroundT(bw, p+1, wait, turnaround);
 				}	
@@ -727,6 +736,26 @@ public class processes
 		{
 			if( myArray[1][i] == t )
 				return myArray[0][i];
+		}
+		return 0;
+	}
+
+	public static int timeThisPArrived(Integer[][] arivedSortedT, int process, int processCount)
+	{
+		for(int i = 0; i < processCount; i++)
+		{
+			if( arivedSortedT[0][i] == process )
+				return arivedSortedT[1][i];
+		}
+		return 0;
+	}
+
+	public static int timeThisPFinished(Integer[][] finished, int process, int processCount)
+	{
+		for(int i = 0; i < processCount; i++)
+		{
+			if( finished[0][i] == process )
+				return finished[1][i];
 		}
 		return 0;
 	}
@@ -1275,7 +1304,7 @@ public class processes
 	private static void bubbleSortP(Integer[][] intArray) 
 	{
 
-    int n = intArray.length;
+    int n = intArray[0].length;
 	    int temp = 0;
 	    int tempP = 0;
 	   
