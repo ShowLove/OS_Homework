@@ -1,8 +1,16 @@
-2 processes
+4 processes
 Using Shortest Job First (Pre)
 
-Time 0: P2 arrived
-Time 0: P2 selected (burst 9)
-Time 3: P1 arrived
-Time 3: P1 selected (burst 5)
-Time 8: P1 finished
+Time 0: P1 arrived
+Time 0: P1 selected (burst 8)
+Time 1: P2 arrived
+Time 1: P2 selected (burst 4)
+Time 2: P3 arrived
+Time 3: P4 arrived
+Time 5: P2 finished
+Time 5: P4 selected (burst 5)
+Time 10: P4 finished
+Time 10: P1 selected (burst 7)
+Time 17: P1 finished
+Time 17: P3 selected (burst 9)
+Time 26: P3 finished
