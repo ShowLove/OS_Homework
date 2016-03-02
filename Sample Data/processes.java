@@ -67,6 +67,108 @@ public class processes
 		processes();
 	}
 
+	public static void runrr(int runFor, int processCount, int q)
+	{
+		Integer[][] arivedSortedT = new Integer[2][processCount];
+		Integer[][] firstSelected = new Integer[2][processCount];
+		Integer[][] finished = new Integer[2][processCount];
+		//Integer[] arrivedProcesses = new Integer[processCount]
+
+		//I'm certain there's a better way to do this but me in rush
+		initSelectedData(firstSelected, processCount);
+		initFinishedData(finished, processCount);
+
+		//Create an empty array list with an initial capacity
+   		ArrayList<Integer> arrivedProcesses = new ArrayList<Integer>(processCount);
+   		//arrlist.add(20); list will contain arrived processes
+   		//arrlist.contains(30);	return true or false if it contains it
+
+		// use 0 for burst, see method declaration
+		sortTimeWithP(arivedSortedT, processCount, 0);
+		bubbleSortFinal(arivedSortedT);
+
+		//Hard read variables
+		q = 4;
+		int time = 0;
+
+		try {
+
+			File file = new File("myTestFile.txt");
+
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			///////////////////////////////////////////////////////
+			// 	Output to file here
+			///////////////////////////////////////////////////////
+
+			while( time < runFor )
+			{
+				time = qRun(bw, arrivedProcesses, arivedSortedT, time, q, processCount);
+				System.out.println(" oT_"+time);
+			}
+
+			//////////////////////////////////////////////////////
+			// 	End output to file
+			///////////////////////////////////////////////////////
+			bw.close();
+
+			System.out.println("Done");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		
+
+	}//END RUN RR
+
+	public static int qRun(BufferedWriter bw, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, int time, int q, int processCount)
+	{
+		int t = time;
+
+		try 
+		{
+			bw.write("Time "+time);
+			int weShouldBreak = 0;
+
+
+			//t will return +1 greater than intuition
+			for(t = time; t <time + q; t++)
+			{
+				System.out.println(" t_"+t);
+
+				
+				if( pThatArrivedAtThisT(arivedSortedT, t, processCount) != 0 )
+				{
+					//Keep track of all arrived processes
+					int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
+					arrivedProcesses.add(process);	 
+
+					System.out.println(" P_"+process+" arrivedAt"+t);
+					//weShouldBreak = 1;
+
+					t++;
+					return t;
+					//return t++;
+				}
+			}//END time for loop
+
+
+		return t;
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return t;
+	}
+
 	public static void runsjf(int runFor, int processCount)
 	{
 
@@ -668,6 +770,7 @@ public class processes
 		return 0;
 	}
 
+
 	///////////////////////////////////////////////////////////////////////
 	//Sort double array A[P][T], y = Time associated with process P
 	//Sorted according to T
@@ -1125,12 +1228,17 @@ public class processes
             if(use.equals("fcfs"))
             {
             	System.out.println("use fcfs!!!");	//DEBUG
-            	runfcfs(runFor, processCount);
+            	runfcfs( runFor, processCount );
             }
             if(use.equals("sjf"))
             {
             	System.out.println("use sjf!!!");	//DEBUG
-            	runsjf( runFor, processCount);
+            	runsjf( runFor, processCount );
+            }
+            if(use.equals("rr"))
+            {
+            	System.out.println("user rr");
+            	runrr( runFor, processCount, quantum );
             }
 
         } 
@@ -1286,135 +1394,6 @@ public class processes
 
 */
 
-	/*
-				int[][] ia = new int[5][6];
-			System.out.println(ia.length);
-			System.out.println(ia[0].length);
-	*/
-
-
-///////////////////////////////SJF///////////////////////////////////
-				/*
-				if(process != 0)	//A process has arrived
-				{
-					arrivedProcesses.add(process);
-					printArrived(bw, t, process);
-
-					//Get burst time for recently arrived process
-					if( burstTimeForP(burstSortedT, process, processCount) != 0)
-						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
-
-					//Check if this is the lowest burst and is worthy of being selected
-					//If we get process = 0 this just won't go. That shouldn't happen though
-					if(process == shortestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount) )
-					{
-						printSelected(bw, t, process, currentBurstT);
-						//keep track when processes are selected
-						insertFirstSelectedData(firstSelected, process, t, processCount);
-						//update info
-						updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t, prevSelectT);
-						prevSelectP = process;
-						prevSelectT = t;
-
-						//DEBUG watch out for negatives
-						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
-
-						//Check if we can finish running this process
-						if( weCanFinishThis(arivedSortedT, processCount, process, t, currentBurstT) )
-						{
-							printFinished(bw, t+currentBurstT, process);
-							insertFinishedData(finished, process, t+currentBurstT, processCount);
-							updateBTime(burstSortedT, currentBurstT, prevSelectP, processCount, t+currentBurstT, prevSelectT);
-							t = t+currentBurstT; //Update time 
-						}
-
-					} */
-
-					//There is another arrived process with a shorter burst
-					
-
-					//Print sorted burst/arrival times 	DEBUG
-					//System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
-					//System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
-
-				//}//END OF ARRIVE IF
-
-				/*
-				boolean ranAllPsArrivedIf = false;
-
-				//Check if all Ps arrived And at least one still has burst
-				//If so sequentially print processes with shortest burst untill all are finished
-				int greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-				//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
-				if(allPsHaveArrived(arrivedProcesses, processCount) && (greatestBurst > 0) && (ranAllPsArrivedIf == false) )
-				{
-					ranAllPsArrivedIf = true;
-
-					//System.out.println("firstArrived_"+Arrays.deepToString(firstSelected) );	DEBUG
-
-					while(greatestBurst > 0)
-					{
-						greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-
-						//System.out.println("We bout to do something! sb_"+greatestBurst); //DEBUG
-						int shortestBurst = shortestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-						process = greatestB_PFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-
-						currentBurstT = burstTimeForP(burstSortedT, process, processCount);
-
-						//newBurstT = burstTimeForP(myArray, process, processCount) - (t - prevSelectT); DEBUG
-						//prevSelectT is messed up
-						printSelected(bw, t, process, currentBurstT);
-						//keep track of first selected processes
-						insertFirstSelectedData(firstSelected, process, t, processCount);
-
-						updateBTimeToZero(burstSortedT, process, processCount);
-
-						printFinished(bw, t+currentBurstT, process);
-						insertFinishedData(finished, process, t+currentBurstT, processCount);
-						t = t+currentBurstT;
-
-						greatestBurst = greatestP_BFromArrivedPs(arrivedProcesses, burstSortedT, processCount);
-					}
-
-					while(t < runFor )
-					{
-						bw.write("Time "+t+": IDLE\n");
-						t++;
-					}
-
-					bw.write("Finished at time "+runFor+"\n\n");
-
-					bubbleSortP(firstSelected);
-					bubbleSortP(arivedSortedT);
-					bubbleSortP(finished);
-
-
-					//Print sorted burst/arrival times 	DEBUG
-					//System.out.println("Selected:"+Arrays.deepToString(firstSelected));
-					//System.out.println("finished:"+Arrays.deepToString(finished));
-					//System.out.println("Burst:"+Arrays.deepToString(arivalBurst));
-					//System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
-
-					//Print wait and turnaround times
-					//Wait = finish time - arrival - burst. Turnaround = wait + burst
-					for(int i = 0; i < arivedSortedT[0].length; i++)
-					{
-						int p = i;
-						//System.out.println("P_"+(p+1)+" B_"+arivalBurst[p+1][1]+" f_"+finished[1][p]+" A_"+arivedSortedT[1][p]);  // DEBUG
-						int wait = finished[1][p] - arivedSortedT[1][p] - arivalBurst[p+1][1];
-						int turnaround = wait + arivalBurst[p+1][1];
-						printWaitTurnaroundT(bw, p+1, wait, turnaround);
-					}						
-/*
-					//Print sorted burst/arrival times 	DEBUG
-					System.out.println("Recursive _t"+t+" p_"+process);
-					System.out.println("Burst:"+Arrays.deepToString(burstSortedT));
-					System.out.println("Arrived:"+Arrays.deepToString(arivedSortedT));
-*/
-				//}//END OF ALL P'S HAVE ARRIVED IF
-				//*/
-///////////////////////////////SJF///////////////////////////////////
 
 
 				
