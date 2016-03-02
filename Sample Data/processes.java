@@ -62,6 +62,9 @@ public class processes
 	//x,0--> Arrival //x,1--> burst
 	public static int[][] arivalBurst;
 
+		public static int lastSelectedP;
+		public static int lastSelectedT;
+
 	public static void main( String args[] )
 	{
 		processes();
@@ -70,6 +73,7 @@ public class processes
 	public static void runrr(int runFor, int processCount, int q)
 	{
 		Integer[][] arivedSortedT = new Integer[2][processCount];
+		Integer[][] burstSortedT = new Integer[2][processCount];
 		Integer[][] firstSelected = new Integer[2][processCount];
 		Integer[][] finished = new Integer[2][processCount];
 		//Integer[] arrivedProcesses = new Integer[processCount]
@@ -83,9 +87,12 @@ public class processes
    		//arrlist.add(20); list will contain arrived processes
    		//arrlist.contains(30);	return true or false if it contains it
 
-		// use 0 for burst, see method declaration
+		// use 0 for Arrived, see method declaration
 		sortTimeWithP(arivedSortedT, processCount, 0);
 		bubbleSortFinal(arivedSortedT);
+		// use 1 for burst, see method declaration
+		sortTimeWithP(burstSortedT, processCount, 1);
+		bubbleSortFinal(burstSortedT);
 
 		//Hard read variables
 		q = 4;
@@ -106,9 +113,12 @@ public class processes
 			// 	Output to file here
 			///////////////////////////////////////////////////////
 
+			lastSelectedP = 0;
+			lastSelectedT = 0;
+
 			while( time < runFor )
 			{
-				time = qRun(bw, arrivedProcesses, arivedSortedT, time, q, processCount);
+				time = qRun(bw, arrivedProcesses, arivedSortedT, burstSortedT, time, q, processCount);
 				System.out.println(" oT_"+time);
 			}
 
@@ -127,37 +137,44 @@ public class processes
 
 	}//END RUN RR
 
-	public static int qRun(BufferedWriter bw, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, int time, int q, int processCount)
+	public static int qRun(BufferedWriter bw, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, Integer[][] burstSortedT, int time, int q, int processCount)
 	{
 		int t = time;
 
 		try 
 		{
 			bw.write("Time "+time);
-			int weShouldBreak = 0;
-
 
 			//t will return +1 greater than intuition
 			for(t = time; t <time + q; t++)
 			{
-				System.out.println(" t_"+t);
-
+				System.out.println(" t_"+t);	//DEBUG
 				
+				//process arrived we need to interupt and start over
 				if( pThatArrivedAtThisT(arivedSortedT, t, processCount) != 0 )
 				{
 					//Keep track of all arrived processes
 					int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
-					arrivedProcesses.add(process);	 
+					arrivedProcesses.add(process);
 
-					System.out.println(" P_"+process+" arrivedAt"+t);
-					//weShouldBreak = 1;
+					//updateBTime(burstSortedT, prevSelectP, processCount, t, prevSelectT);
+					int nb1 = (time + q) - t;							//DEBUG
+					int nb2 = t+ burstTimeForP(burstSortedT, process, processCount);
+					updateBTimeQ( burstSortedT, process, processCount, nb1, nb2);
+					lastSelectedP = process;
+					lastSelectedT = t;	 
 
-					t++;
-					return t;
-					//return t++;
+					System.out.println("BurstTimeArray"+Arrays.deepToString(burstSortedT));
+					System.out.println(" P_"+process+" t_"+t+" time_"+time+" q_"+q+" lsp_"+lastSelectedP+" lst_"+lastSelectedT);	//DEBUG
+					System.out.println(" nb1_"+nb1);					//DEBUG
+					System.out.println(" nb2_"+nb2);	//DEBUG				
+
+					return ++t;
 				}
+
 			}//END time for loop
 
+			//(time + q) - t = newburst
 
 		return t;
 
@@ -167,6 +184,21 @@ public class processes
 		}
 
 		return t;
+	}
+
+	//Updating burst time for previous selected numProcess 										//see meth call
+	public static void updateBTimeQ( Integer[][] burstSortedT, int  process, int  processCount, int nb1, int nb2)
+	{
+		int newBurstT = (nb1<nb2)?nb1:nb2;
+
+		if(newBurstT <= 0)
+			newBurstT = 0;
+
+		for( int i = 0; i < processCount; i++)
+		{
+			if(process == burstSortedT[0][i])
+				burstSortedT[1][i] = newBurstT;
+		}
 	}
 
 	public static void runsjf(int runFor, int processCount)
