@@ -64,6 +64,7 @@ public class processes
 
 		public static int lastSelectedP;
 		public static int lastSelectedT;
+		public static int rrIndex;
 
 	public static void main( String args[] )
 	{
@@ -74,6 +75,7 @@ public class processes
 	{
 		Integer[][] arivedSortedT = new Integer[2][processCount];
 		Integer[][] burstSortedT = new Integer[2][processCount];
+		Integer[][] burstSortedTQ = new Integer[2][processCount];
 		Integer[][] firstSelected = new Integer[2][processCount];
 		Integer[][] finished = new Integer[2][processCount];
 		//Integer[] arrivedProcesses = new Integer[processCount]
@@ -86,17 +88,33 @@ public class processes
    		ArrayList<Integer> arrivedProcesses = new ArrayList<Integer>(processCount);
    		//arrlist.add(20); list will contain arrived processes
    		//arrlist.contains(30);	return true or false if it contains it
+   		//Create a hash table map the index to processes
+   		Hashtable<Integer, Integer> rrIndexHash = new Hashtable<Integer, Integer>();
 
+   		//Do not sort these again 
 		// use 0 for Arrived, see method declaration
 		sortTimeWithP(arivedSortedT, processCount, 0);
 		bubbleSortFinal(arivedSortedT);
-		// use 1 for burst, see method declaration
-		sortTimeWithP(burstSortedT, processCount, 1);
-		bubbleSortFinal(burstSortedT);
+		// use 1 for burst, see method declaration 
+		sortTimeWithP(burstSortedTQ, processCount, 1);	//DEBUG dont think i need this but i could be wrong
+		sortBurstParalelWitArrived(burstSortedTQ, arivedSortedT, processCount);
+
+		//Map process to index
+		for(int i = 0; i < arivedSortedT.length; i++)
+		{
+			rrIndexHash.put(arivedSortedT[0][i], i);
+		}
+		// arivedSortedT[0][i] will give us the key from the index
+
+		//DEBUG
+		//System.out.println("BurstSorted"+Arrays.deepToString(burstSortedTQ));	//DEBUG		
+		//System.out.println("ArrivedSorted"+Arrays.deepToString(arivedSortedT));	//DEBUG		
 
 		//Hard read variables
-		q = 4;
+		q = 4;			//DEBUG
 		int time = 0;
+
+		rrIndex = 0;
 
 		try {
 
@@ -118,8 +136,14 @@ public class processes
 
 			while( time < runFor )
 			{
-				time = qRun(bw, arrivedProcesses, arivedSortedT, burstSortedT, time, q, processCount);
+				time = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount);
 				System.out.println(" oT_"+time);
+
+				rrIndex++;
+
+				rrIndex = (rrIndex >= processCount)?0:rrIndex;
+
+				System.out.println("rrIndex("+rrIndex+")");	//DEBUG
 			}
 
 			//////////////////////////////////////////////////////
@@ -131,13 +155,11 @@ public class processes
 
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-
-		
+		}	
 
 	}//END RUN RR
 
-	public static int qRun(BufferedWriter bw, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, Integer[][] burstSortedT, int time, int q, int processCount)
+	public static int qRun(BufferedWriter bw, Hashtable<Integer, Integer> rrIndexHash, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, Integer[][] burstSortedTQ, int time, int q, int processCount)
 	{
 		int t = time;
 
@@ -157,17 +179,22 @@ public class processes
 					int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
 					arrivedProcesses.add(process);
 
+					rrIndex = rrIndexHash.get(process);
+					rrIndex = (rrIndex >= processCount)?0:rrIndex;
+					System.out.println("rrIndex("+rrIndex+")");	//DEBUG
+
 					//updateBTime(burstSortedT, prevSelectP, processCount, t, prevSelectT);
 					int nb1 = (time + q) - t;							//DEBUG
-					int nb2 = t+ burstTimeForP(burstSortedT, process, processCount);
-					updateBTimeQ( burstSortedT, process, processCount, nb1, nb2);
+					int nb2 = t+ burstTimeForP(burstSortedTQ, process, processCount);
+					updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
 					lastSelectedP = process;
 					lastSelectedT = t;	 
 
-					System.out.println("BurstTimeArray"+Arrays.deepToString(burstSortedT));
+					//DEBUG
+					System.out.println("BurstTimeArray"+Arrays.deepToString(burstSortedTQ));	//DEBUG
 					System.out.println(" P_"+process+" t_"+t+" time_"+time+" q_"+q+" lsp_"+lastSelectedP+" lst_"+lastSelectedT);	//DEBUG
-					System.out.println(" nb1_"+nb1);					//DEBUG
-					System.out.println(" nb2_"+nb2);	//DEBUG				
+					//System.out.println(" nb1_"+nb1);					//DEBUG
+					//System.out.println(" nb2_"+nb2);	//DEBUG				
 
 					return ++t;
 				}
@@ -184,6 +211,42 @@ public class processes
 		}
 
 		return t;
+	}
+
+	public static void sortBurstParalelWitArrived(Integer[][] burstSortedTQ, Integer[][] arivedSortedT, int processCount)
+	{
+		int p;
+		int pTemp = 0;
+		int tTemp = 0;
+
+		for(int i = 0; i < processCount; i++)
+		{
+			p = arivedSortedT[0][i];
+
+			for(int j = 0; j < processCount; j++)
+			{
+				//We found eq p & t from arrived
+				if(burstSortedTQ[0][j] == p)
+				{
+
+					//If it wasn't by coincidence already in correct possition
+					if( i != j )
+					{
+						//hold the values we will replace in a temp
+						pTemp = burstSortedTQ[0][i];
+						tTemp = burstSortedTQ[1][i];
+
+						//Put burst in appropriate sorted possition
+						burstSortedTQ[0][i] = burstSortedTQ[0][j];
+						burstSortedTQ[1][i] = burstSortedTQ[1][j];
+
+						//Dont loose data
+						burstSortedTQ[0][j] = pTemp;
+						burstSortedTQ[1][j] = tTemp;	
+					}				
+				}
+			}
+		}
 	}
 
 	//Updating burst time for previous selected numProcess 										//see meth call
