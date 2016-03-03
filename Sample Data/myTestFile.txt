@@ -1,1 +1,7 @@
-Time 0Time 1Time 4Time 8Time 12
+Time 0: P2 arrived
+Time 1: P1 selected (burst 5)
+Time 3: P1 arrived
+Time 4: P2 selected (burst 4)
+Time 8: P1 selected (burst 2)
+Time 12: P2 selected (burst 4)
+Time 16: P1 selected (burst 2)

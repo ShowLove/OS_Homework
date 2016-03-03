@@ -56,7 +56,7 @@ javap processes
 ////////////////////////////////////////////////////////////
 
 
-public class processes
+public class process2
 {
 	//if x is process number
 	//x,0--> Arrival //x,1--> burst
@@ -134,20 +134,13 @@ public class processes
 			lastSelectedP = 0;
 			lastSelectedT = 0;
 
-			int burstTime = 0; int process = 0;
-
 			while( time < runFor )
 			{
 				time = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount);
-				//DEBUG
-				System.out.println("BurstSorted"+Arrays.deepToString(burstSortedTQ));
-				process = rrIndexHash.get(arivedSortedT[0][rrIndex])+1; //rrIndex = process - 1
-				burstTime = burstTimeForP(burstSortedTQ, process, processCount);
-				System.out.println(" P_"+process+" BT_"+burstTime+" rrIndex_"+rrIndex);
-
-				printSelected(bw, time, process, burstTime);
+				System.out.println(" while_t_"+time);
 
 				rrIndex++;
+
 				rrIndex = (rrIndex >= processCount)?0:rrIndex;
 
 				System.out.println("rrIndex("+rrIndex+")");	//DEBUG
@@ -172,44 +165,15 @@ public class processes
 
 		try 
 		{
-			bw.write("");
+			bw.write("Time "+time);
 
-			//t will return +1 greater than intuition
-			for(t = time; t <time + q; t++)
-			{
-				System.out.println(" t_"+t);	//DEBUG
-				
-				//process arrived we need to interupt and start over
-				if( pThatArrivedAtThisT(arivedSortedT, t, processCount) != 0 )
-				{
-					//Keep track of all arrived processes
-					int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
-					arrivedProcesses.add(process);
+			int tempT = 999;
 
-					rrIndex = rrIndexHash.get(process);
-					rrIndex = (rrIndex >= processCount)?0:rrIndex;
-					System.out.println("rrIndex("+rrIndex+")");	//DEBUG
+			//find P's that arrive between the quantum
+				//Process Arrived at this time
+				tempT = pArrivedrr(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, t);
 
-					printArrived(bw, t, process);
-
-					//updateBTime(burstSortedT, prevSelectP, processCount, t, prevSelectT);
-					int nb1 = (time + q) - t;							//DEBUG
-					int nb2 = t+ burstTimeForP(burstSortedTQ, process, processCount);
-					updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
-					lastSelectedP = process;
-					lastSelectedT = t;	 
-
-					//DEBUG
-					//System.out.println("BurstTimeArray"+Arrays.deepToString(burstSortedTQ));	//DEBUG
-					//System.out.println(" P_"+process+" t_"+t+" time_"+time+" q_"+q+" lsp_"+lastSelectedP+" lst_"+lastSelectedT);	//DEBUG
-					//System.out.println(" nb1_"+nb1);					//DEBUG
-					//System.out.println(" nb2_"+nb2);	//DEBUG				
-
-					return ++t;
-				}
-
-			}//END time for loop
-
+			//(time + q) - t = newburst
 
 		return t;
 
@@ -217,6 +181,43 @@ public class processes
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		return t;
+	}
+
+	public static int pArrivedrr(BufferedWriter bw, Hashtable<Integer, Integer> rrIndexHash, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, Integer[][] burstSortedTQ, int time, int q, int processCount, int t)
+	{
+
+		for(t = time; t <time + q; t++)
+		{
+			//process arrived we need to print it
+			if( pThatArrivedAtThisT(arivedSortedT, t, processCount) != 0 )
+			{
+				//Keep track of all arrived processes
+				int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
+				arrivedProcesses.add(process);
+
+				rrIndex = rrIndexHash.get(process);
+				rrIndex = (rrIndex >= processCount)?0:rrIndex;
+				System.out.println("rrIndex("+rrIndex+")");	//DEBUG
+
+				//updateBTime(burstSortedT, prevSelectP, processCount, t, prevSelectT);
+				int nb1 = (time + q) - t;							//DEBUG
+				int nb2 = t+ burstTimeForP(burstSortedTQ, process, processCount);
+				updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
+				lastSelectedP = process;
+				lastSelectedT = t;	 
+
+				//DEBUG
+				//System.out.println("BurstTimeArray"+Arrays.deepToString(burstSortedTQ));	//DEBUG
+				System.out.println(" P_"+process+" t_"+t+" time_"+time+" q_"+q+" lsp_"+lastSelectedP+" lst_"+lastSelectedT);	//DEBUG
+				//System.out.println(" nb1_"+nb1);					//DEBUG
+				//System.out.println(" nb2_"+nb2);	//DEBUG				
+
+				return ++t;
+			}
+
+		}//End of for loop
 
 		return t;
 	}
