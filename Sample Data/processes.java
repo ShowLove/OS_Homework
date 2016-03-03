@@ -134,17 +134,31 @@ public class processes
 			lastSelectedP = 0;
 			lastSelectedT = 0;
 
-			int burstTime = 0; int process = 0;
+			int burstTime = 0; int process = 0; int nextAvailrrIndex = 0; int nextAvailableP = 0; int tempIndex = 0;
 
 			while( time < runFor )
 			{
 				time = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount);
 				//DEBUG
-				System.out.println("BurstSorted"+Arrays.deepToString(burstSortedTQ));
+				System.out.println("BurstSorted"+Arrays.deepToString(burstSortedTQ));				//DEBUG
 				process = rrIndexHash.get(arivedSortedT[0][rrIndex])+1; //rrIndex = process - 1
 				burstTime = burstTimeForP(burstSortedTQ, process, processCount);
-				System.out.println(" P_"+process+" BT_"+burstTime+" rrIndex_"+rrIndex);
+				System.out.println(" P_"+process+" BT_"+burstTime+" rrIndex_"+rrIndex);				//DEBUG
+				
+				//Find next Available arrived process
+				tempIndex = nextAvailableArrivedP(rrIndexHash, arrivedProcesses, rrIndex, processCount);
+				if(tempIndex == 999)
+				{
+					System.out.println("there ar no other arrived Ps");
+				}
+				else
+				{
+					nextAvailableP =	rrIndexHash.get(arivedSortedT[0][tempIndex])+1;//rrIndex = process - 1
+					System.out.println(" NextAvailableP_"+nextAvailableP);
+				}
+				
 
+				
 				printSelected(bw, time, process, burstTime);
 
 				rrIndex++;
@@ -165,6 +179,21 @@ public class processes
 		}	
 
 	}//END RUN RR
+
+	// returns rrIndexHash of nextAvailableArrivedP
+	public static int nextAvailableArrivedP(Hashtable<Integer, Integer> rrIndexHash, ArrayList<Integer> arrivedProcesses, int rrIndex, int processCount)
+	{
+		for(int i = 1; i < processCount; i++ )
+		{
+			if( arrivedProcesses.contains(rrIndex + i) )
+			{
+				System.out.println("nIndex_"+(rrIndex + i));
+				System.out.println("rIndex_"+(rrIndex + i)%processCount);				
+				return ( (rrIndex + i)%(processCount) ); //processCount = index - 1
+			}
+		}
+		return 999;
+	}
 
 	public static int qRun(BufferedWriter bw, Hashtable<Integer, Integer> rrIndexHash, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, Integer[][] burstSortedTQ, int time, int q, int processCount)
 	{
@@ -220,6 +249,8 @@ public class processes
 
 		return t;
 	}
+
+
 
 	public static void sortBurstParalelWitArrived(Integer[][] burstSortedTQ, Integer[][] arivedSortedT, int processCount)
 	{
