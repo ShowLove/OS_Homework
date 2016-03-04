@@ -86,7 +86,8 @@ public class processes
 
 		//Create an empty array list with an initial capacity
    		ArrayList<Integer> arrivedProcesses = new ArrayList<Integer>(processCount);
-   		//arrlist.add(20); list will contain arrived processes
+   		ArrayList<Integer> finishedProcesses = new ArrayList<Integer>(processCount);
+  		//arrlist.add(20); list will contain arrived processes
    		//arrlist.contains(30);	return true or false if it contains it
    		//Create a hash table map the index to processes
    		Hashtable<Integer, Integer> rrIndexHash = new Hashtable<Integer, Integer>();
@@ -157,15 +158,27 @@ public class processes
 
 			int burstTime = 0; int process = 0; int nextAvailrrIndex = 0; int nextAvailableP = 0; int tempIndex = 0;
 			int specialCase = 0; int burstHasTleft = 1;
+			boolean newTime = false;
 
 			while( time < runFor )
 			{
+				//If all Ps have finish jump out of for loop
+				if(allrrPsFinished(burstSortedTQ, processCount, process ) )
+					break;
+
+				specialCase = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
+
 				//Print arrived// Specifically, arrived selected arrived. the first arrived is our special case
 				//We increase time here because we alreaddy  selected and arrived for prev q
-				specialCase = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
 				if(specialCase == 1)
 				{
-					time = qTime(time, q);
+					if(newTime == false)
+						time = qTime(time, q);
+
+					if(newTime == true)
+						;
+
+					newTime = false;
 				}					
 
 				//Prep for printing Select
@@ -183,7 +196,13 @@ public class processes
 					burstHasTleft = updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
 					if( burstHasTleft == 0 )
 					{
+						newTime = true;
+						time = time + burstTime;
 						printFinished(bw, time, process);
+						//update finished Ps
+						finishedProcesses.add(process);
+						finished[0][rrIndex] = process;
+						finished[1][rrIndex] = time;
 					}
 
 					rrIndex++;
@@ -216,7 +235,13 @@ public class processes
 						burstHasTleft = updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
 						if( burstHasTleft == 0 )
 						{
+							newTime = true;
+							time = time + burstTime;
 							printFinished(bw, time, process);
+							//update finished Ps
+							finishedProcesses.add(process);
+							finished[0][rrIndex] = process;
+							finished[1][rrIndex] = time;
 						}
 
 						rrIndex++;
@@ -224,11 +249,6 @@ public class processes
 					}
 				}
 
-
-
-				//Move to next quantum
-				if(specialCase == 0)
-					time = qTime(time, q);
 
 				System.out.println();
 			}//END of while loop
@@ -245,6 +265,25 @@ public class processes
 		}	
 
 	}//END RUN RR
+
+	public static boolean allrrPsFinished( Integer[][] burstSortedTQ, int processCount, int process )
+	{
+		//Check that all arived Ps finished, if no arrived Ps it shouldn't go in for loop
+		for(int p = 0; p < processCount; p++ )
+		{
+			if( burstSortedTQ[1][p] > 0 )
+				return false;
+		}
+		return true;
+	}
+
+	public static boolean isRR_PFinished(ArrayList<Integer> finishedProcesses, int process)
+	{
+			if(finishedProcesses.contains(process))
+				return true;
+
+			return false;
+	}
 
 	// returns rrIndexHash of nextAvailableArrivedP
 	public static int nextAvailableArrivedP(Hashtable<Integer, Integer> rrIndexHash, ArrayList<Integer> arrivedProcesses, int rrIndex, int processCount)
@@ -289,6 +328,17 @@ public class processes
 						int burstTime = burstTimeForP(burstSortedTQ, process, processCount);
 						//Print selected 
 						printSelected(bw, t, process, burstTime);
+
+						//Update burst time
+						/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
+						/*Finish*/ 	int nb2 = 10000;  //we are using nb1 no need to compare DEBUG_Thought
+						//If this returns 0 the P burst has finished
+						int burstHasTleft = updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
+						if( burstHasTleft == 0 )
+						{
+							//DEBUG_Thought   make sure you update time later 
+							printFinished(bw, time, process);
+						}
 
 						rrIndex++;
 						rrIndex = (rrIndex >= processCount)?0:rrIndex;
