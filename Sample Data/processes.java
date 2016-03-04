@@ -292,8 +292,9 @@ public class processes
 			for(int i = 0; i < arivedSortedT[0].length; i++)
 			{
 				p = i;
-				wait = firstSelected[1][p] - arivedSortedT[1][p];
 				turnaround = finished[1][p] - arivedSortedT[1][p];
+				//wait = firstSelected[1][p] - arivedSortedT[1][p];
+				wait = turnaround - arivalBurst[p+1][1];
 				printWaitTurnaroundT(bw, p+1, wait, turnaround);
 			}
 			
