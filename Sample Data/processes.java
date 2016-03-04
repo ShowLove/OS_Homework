@@ -152,6 +152,8 @@ public class processes
 			// 	Output to file here
 			///////////////////////////////////////////////////////
 
+			printHeaderRR( processCount, bw );
+
 			lastSelectedP = 0;
 			lastSelectedT = 0;
 			int  tempHashIndex = 0;
@@ -251,7 +253,16 @@ public class processes
 
 
 				System.out.println();
-			}//END of while loop
+			}//END of while loop// ALL Ps finished
+
+			while(time < runFor )
+			{
+				bw.write("Time "+time+": IDLE\n");
+				time++;
+			}
+
+			//Everything fineshed next we print turnaround and wait 
+			bw.write("Finished at time "+time+"\n\n");;
 
 			//////////////////////////////////////////////////////
 			// 	End output to file
@@ -275,14 +286,6 @@ public class processes
 				return false;
 		}
 		return true;
-	}
-
-	public static boolean isRR_PFinished(ArrayList<Integer> finishedProcesses, int process)
-	{
-			if(finishedProcesses.contains(process))
-				return true;
-
-			return false;
 	}
 
 	// returns rrIndexHash of nextAvailableArrivedP
@@ -1349,9 +1352,9 @@ public class processes
 			e.printStackTrace();
 		}
 	}
-
+	//myArray should be finishedSortedT
 	public static void printFinishedAt(BufferedWriter bw, Integer[][] myArray)
-	{
+	{ //finishedSortedT
 		try {
 			bw.write("Finished at time "+myArray[1][myArray[0].length-1]+"\n\n");
 		} catch (IOException e) {
@@ -1373,6 +1376,18 @@ public class processes
 		try {
 			bw.write(processCount+" processes\n");
 			bw.write("Using First Come First Served\n\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void printHeaderRR(int processCount, BufferedWriter bw)
+	{
+		try {
+			bw.write(processCount+" processes\n");
+			bw.write("Using Round-Robin\n");
+			bw.write("Quantum 2\n\n");
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
