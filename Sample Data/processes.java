@@ -142,7 +142,7 @@ public class processes
 
 		try {
 
-			File file = new File("myTestFile.txt");
+			File file = new File("processes.out");
 
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
@@ -261,7 +261,7 @@ public class processes
 				}
 
 
-				System.out.println();
+				//System.out.println();
 			}//END of while loop// ALL Ps finished
 
 			while(time < runFor )
@@ -284,9 +284,9 @@ public class processes
 			bubbleSortP(finished);
 
 			//DEBUG
-			System.out.println("firstSelected"+Arrays.deepToString(firstSelected));
-			System.out.println("arivedSortedT"+Arrays.deepToString(arivedSortedT));				//DEBUG
-			System.out.println("finished"+Arrays.deepToString(finished));				//DEBUG
+			//System.out.println("firstSelected"+Arrays.deepToString(firstSelected));
+			//System.out.println("arivedSortedT"+Arrays.deepToString(arivedSortedT));				//DEBUG
+			//System.out.println("finished"+Arrays.deepToString(finished));				//DEBUG
 			
 			//Print wait and turnaround times
 			for(int i = 0; i < arivedSortedT[0].length; i++)
@@ -305,7 +305,7 @@ public class processes
 			///////////////////////////////////////////////////////
 			bw.close();
 
-			System.out.println("Done");
+			//System.out.println("Done");
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -368,7 +368,7 @@ public class processes
 			//t will return +1 greater than intuition
 			for(t = time; t <time + q; t++)
 			{
-				System.out.println(" t_"+t);	//DEBUG
+				//System.out.println(" t_"+t);	//DEBUG
 
 				//If process arrived at 0 print arrived and selected. 
 				//From now on this prints last arrived befor next selected DEBUG_Thoughts
@@ -515,12 +515,12 @@ public class processes
 
 		while(i.hasNext()) {
 		 Map.Entry me = (Map.Entry)i.next();
-		 System.out.print("[k,v]");
-		 System.out.print(me.getKey() + ":");
-		 System.out.print(me.getValue() + ",");
+		 //System.out.print("[k,v]");
+		 //System.out.print(me.getKey() + ":");
+		 //System.out.print(me.getValue() + ",");
 		}		
 
-		System.out.println();
+		//System.out.println();
 	}
 
 	public static void runsjf(int runFor, int processCount)
@@ -567,7 +567,7 @@ public class processes
 
 		try {
 
-			File file = new File("myTestFile.txt");
+			File file = new File("processes.out");
 
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
@@ -841,7 +841,7 @@ public class processes
 			///////////////////////////////////////////////////////
 			bw.close();
 
-			System.out.println("Done");
+			//System.out.println("Done");
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -988,7 +988,7 @@ public class processes
 	{
 		if(arrivedProcesses.size() == processCount)
 		{
-			System.out.println("All Processes have arrived"); //DEBUG
+			//System.out.println("All Processes have arrived"); //DEBUG
 			return true;
 		}
 		return false;
@@ -1244,7 +1244,7 @@ public class processes
 	{
 		try {
 
-			File file = new File("myTestFile.txt");
+			File file = new File("processes.out");
 
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
@@ -1523,8 +1523,13 @@ public class processes
        try 
        {
             Scanner input = new Scanner(System.in);
-            System.out.print("Enter the file name with extention : ");
-            File file = new File(input.nextLine());
+
+            //To Input from terminal
+            //System.out.print("Enter the file name with extention : ");
+            //File file = new File(input.nextLine());
+
+            String filename = "processes.in";
+            File file = new File(filename);
 
             input = new Scanner(file);
 
@@ -1593,17 +1598,17 @@ public class processes
             //Choose Job logic
             if(use.equals("fcfs"))
             {
-            	System.out.println("use fcfs!!!");	//DEBUG
+            	///System.out.println("use fcfs!!!");	//DEBUG
             	runfcfs( runFor, processCount );
             }
             if(use.equals("sjf"))
             {
-            	System.out.println("use sjf!!!");	//DEBUG
+            	//System.out.println("use sjf!!!");	//DEBUG
             	runsjf( runFor, processCount );
             }
             if(use.equals("rr"))
             {
-            	System.out.println("user rr");
+            	//System.out.println("user rr");
             	runrr( runFor, processCount, quantum );
             }
 
