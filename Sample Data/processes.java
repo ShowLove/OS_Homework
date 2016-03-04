@@ -86,6 +86,7 @@ public class processes
 
 		//Create an empty array list with an initial capacity
    		ArrayList<Integer> arrivedProcesses = new ArrayList<Integer>(processCount);
+   		ArrayList<Integer> selectedProcesses = new ArrayList<Integer>(processCount);
    		ArrayList<Integer> finishedProcesses = new ArrayList<Integer>(processCount);
   		//arrlist.add(20); list will contain arrived processes
    		//arrlist.contains(30);	return true or false if it contains it
@@ -93,6 +94,8 @@ public class processes
    		Hashtable<Integer, Integer> rrIndexHash = new Hashtable<Integer, Integer>();
    		Hashtable<Integer, Integer> rrIndexHashIP = new Hashtable<Integer, Integer>();
 
+
+   		//insertFirstSelectedData
 
    		//Do not sort these again 
 		// use 0 for Arrived, see method declaration
@@ -168,7 +171,7 @@ public class processes
 				if(allrrPsFinished(burstSortedTQ, processCount, process ) )
 					break;
 
-				specialCase = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
+				specialCase = qRun(bw, rrIndexHash, arrivedProcesses, selectedProcesses, arivedSortedT, burstSortedTQ, firstSelected, time, q, processCount, specialCase);
 
 				//Print arrived// Specifically, arrived selected arrived. the first arrived is our special case
 				//We increase time here because we alreaddy  selected and arrived for prev q
@@ -190,6 +193,9 @@ public class processes
 				if(arrivedProcesses.contains(process))
 				{
 					printSelected(bw, time, process, burstTime);
+					//keep track of first selected processes
+					insertFirstSelectedDataRR(selectedProcesses, firstSelected, process, time, processCount);
+					selectedProcesses.add(process);
 
 					//Update burst time
 					/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
@@ -230,6 +236,9 @@ public class processes
 
 						//Print select
 						printSelected(bw, time, process, burstTime);
+						//keep track of first selected processes
+						insertFirstSelectedDataRR(selectedProcesses, firstSelected, process, time, processCount);
+						selectedProcesses.add(process);
 						//Update burst time
 						/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
 						/*Finish*/ 	int nb2 = 10000;  //we are using nb1 no need to compare DEBUG_Thought
@@ -262,7 +271,33 @@ public class processes
 			}
 
 			//Everything fineshed next we print turnaround and wait 
-			bw.write("Finished at time "+time+"\n\n");;
+			bw.write("Finished at time "+time+"\n\n");
+
+
+			int wait = 0;
+			int turnaround = 0;
+			int p = 0;
+
+			bubbleSortFinal(finished);
+			bubbleSortP(firstSelected);
+			bubbleSortP(arivedSortedT);
+			bubbleSortP(finished);
+
+			//DEBUG
+			System.out.println("firstSelected"+Arrays.deepToString(firstSelected));
+			System.out.println("arivedSortedT"+Arrays.deepToString(arivedSortedT));				//DEBUG
+			System.out.println("finished"+Arrays.deepToString(finished));				//DEBUG
+			
+			//Print wait and turnaround times
+			for(int i = 0; i < arivedSortedT[0].length; i++)
+			{
+				p = i;
+				wait = firstSelected[1][p] - arivedSortedT[1][p];
+				turnaround = finished[1][p] - arivedSortedT[1][p];
+				printWaitTurnaroundT(bw, p+1, wait, turnaround);
+			}
+			
+
 
 			//////////////////////////////////////////////////////
 			// 	End output to file
@@ -276,6 +311,24 @@ public class processes
 		}	
 
 	}//END RUN RR
+
+	public static void insertFirstSelectedDataRR(ArrayList<Integer> arrivedProcesses, Integer[][] myArray, int process, int t, int processCount)
+	{ //firstSelected
+
+		if(arrivedProcesses.contains(process))
+		{
+			return;	
+		}
+		for(int i = 0; i < processCount; i++)
+		{
+			if(myArray[0][i] == 0)
+			{
+				myArray[0][i] = process;
+				myArray[1][i] =	t;
+				break;
+			}
+		}
+	}
 
 	public static boolean allrrPsFinished( Integer[][] burstSortedTQ, int processCount, int process )
 	{
@@ -303,7 +356,7 @@ public class processes
 		return 999;
 	}
 
-	public static int qRun(BufferedWriter bw, Hashtable<Integer, Integer> rrIndexHash, ArrayList<Integer> arrivedProcesses, Integer[][] arivedSortedT, Integer[][] burstSortedTQ, int time, int q, int processCount, int specialCase)
+	public static int qRun(BufferedWriter bw, Hashtable<Integer, Integer> rrIndexHash, ArrayList<Integer> arrivedProcesses, ArrayList<Integer> selectedProcesses, Integer[][] arivedSortedT, Integer[][] burstSortedTQ, Integer[][] firstSelected, int time, int q, int processCount, int specialCase)
 	{
 		int t = time;
 
@@ -331,6 +384,9 @@ public class processes
 						int burstTime = burstTimeForP(burstSortedTQ, process, processCount);
 						//Print selected 
 						printSelected(bw, t, process, burstTime);
+						//keep track of first selected processes
+						insertFirstSelectedDataRR(selectedProcesses, firstSelected, process, time, processCount);
+						selectedProcesses.add(process);
 
 						//Update burst time
 						/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
@@ -872,7 +928,7 @@ public class processes
 	}
 
 	public static void insertFirstSelectedData(Integer[][] myArray, int process, int t, int processCount)
-	{
+	{ //firstSelected
 		for(int i = 0; i < processCount; i++)
 		{
 			if(myArray[0][i] == 0)
