@@ -160,56 +160,19 @@ public class processes
 
 			while( time < runFor )
 			{
-				//Print arrived
+				//Print arrived// Specifically, arrived selected arrived. the first arrived is our special case
+				//We increase time here because we alreaddy  selected and arrived for prev q
 				specialCase = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
 				if(specialCase == 1)
 				{
 					time = qTime(time, q);
-					//specialCase = 0;
-					//qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
 				}					
 
 				//Prep for printing Select
 				process = rrIndexHashIP.get(rrIndex); //rrIndex = process - 1
 				burstTime = burstTimeForP(burstSortedTQ, process, processCount);
 				
-				//Print selected this should happen every Q
-				//If process has not arrived check next process available
-				if( !arrivedProcesses.contains(process) )
-				{
-					//Find next Available arrived process
-					//DEBUG_Thought	add finished condition to this
-					tempIndex = nextAvailableArrivedP(rrIndexHash, arrivedProcesses, rrIndex, processCount);
-					if(tempIndex == 999)
-					{
-						//Print IDLE untill you find next available P
-						System.out.println("there ar no other arrived Ps");
-
-					}
-					else
-					{
-						//Print next P in the que thats available
-						rrIndex = tempIndex;
-						nextAvailableP =	rrIndexHash.get(arivedSortedT[0][tempIndex])+1;//rrIndex = process - 1
-						System.out.println(" NextAvailableP_"+nextAvailableP);
-						printSelected(bw, time, nextAvailableP, burstTime);
-
-						//Update burst time
-						/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
-						/*Finish*/ 	int nb2 = 10000;  //we are using nb1 no need to compare DEBUG_Thought
-						//If this returns 0 the P burst has finished
-						burstHasTleft = updateBTimeQ( burstSortedTQ, process, processCount, nb1, 10000);
-						if( burstHasTleft == 0 )
-						{
-							printFinished(bw, time, process);
-						}
-
-						rrIndex++;
-						rrIndex = (rrIndex >= processCount)?0:rrIndex;
-
-					}
-				}
-				else	//Desired P has arrived we can print it
+				if(arrivedProcesses.contains(process))
 				{
 					printSelected(bw, time, process, burstTime);
 
@@ -224,8 +187,44 @@ public class processes
 					}
 
 					rrIndex++;
-					rrIndex = (rrIndex >= processCount)?0:rrIndex;
+					rrIndex = (rrIndex >= processCount)?0:rrIndex;					
 				}
+				else if( !arrivedProcesses.contains(process) )
+				{
+					//get next index thats arrived
+					tempIndex = nextAvailableArrivedP(rrIndexHash, arrivedProcesses, rrIndex, processCount);
+
+					if(tempIndex == 999)
+					{
+						//Print IDLE untill you find next available P
+						System.out.println("there ar no other arrived Ps");
+
+					}
+					else	////Select next P in the que thats that arrived with tempIndex we derived earlier
+					{	
+						//prep for select
+						rrIndex = tempIndex;
+						process = rrIndexHashIP.get(rrIndex); //rrIndex = process - 1
+						burstTime = burstTimeForP(burstSortedTQ, process, processCount);
+
+						//Print select
+						printSelected(bw, time, process, burstTime);
+						//Update burst time
+						/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
+						/*Finish*/ 	int nb2 = 10000;  //we are using nb1 no need to compare DEBUG_Thought
+						//If this returns 0 the P burst has finished
+						burstHasTleft = updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
+						if( burstHasTleft == 0 )
+						{
+							printFinished(bw, time, process);
+						}
+
+						rrIndex++;
+						rrIndex = (rrIndex >= processCount)?0:rrIndex;	
+					}
+				}
+
+
 
 				//Move to next quantum
 				if(specialCase == 0)
@@ -254,8 +253,8 @@ public class processes
 		{
 			if( arrivedProcesses.contains(rrIndex + i) )
 			{
-				System.out.println("nIndex_"+(rrIndex + i));
-				System.out.println("rIndex_"+(rrIndex + i)%processCount);				
+				//System.out.println("nIndex_"+(rrIndex + i));
+				//System.out.println("rIndex_"+(rrIndex + i)%processCount);				
 				return ( (rrIndex + i)%(processCount) ); //processCount = index - 1
 			}
 		}
