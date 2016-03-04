@@ -21,6 +21,20 @@ P1 wait 5 turnaround 10
 P2 wait 5 turnaround 14
 
 /////////////////////////
-1.	Sort the burst acording to arrived
-2. 	Sort the arrived according to arrived
-3.	keep track of the index for these and cycle around from first arrived to last and back again
+1. first to arrive is first to be selected
+2. Last to arrive durring a q is the first to start next q
+3. When finished next in queue takes over then and q resets
+
+		Burst	Arrival. selected.	Finished. +1                                  
+P1.		6		1        1.	    	17	
+.						 5. 
+p2.	    12	    3.		 4	 		 31		
+.						 18. 24. 29
+p3.		2		5.		 7.			 8
+p4.		8		7.		 9.			 28
+.						 21. 27
+p5.		3		9.		 12.		 14	
+
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2
+z 11111 22222 333 44444 55555 11111 22222 44444 22222 444 22222
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2

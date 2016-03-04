@@ -120,6 +120,18 @@ public class processes
 
 		//Hard read variables
 		//q = 4;			//DEBUG
+				//DEBUG need P and burst time
+				//System.out.println("BurstSorted"+Arrays.deepToString(burstSortedTQ));
+				//System.out.println("arivedSortedT"+Arrays.deepToString(arivedSortedT));				//DEBUG
+				///printHash(rrIndexHash);	//DEBUG
+				//System.out.println(" P_"+process+" BT_"+burstTime+" rrIndex_"+rrIndex);				//DEBUG
+
+					//DEBUG
+					//System.out.println("BurstTimeArray"+Arrays.deepToString(burstSortedTQ));	//DEBUG
+					//System.out.println(" P_"+process+" t_"+t+" time_"+time+" q_"+q+" lsp_"+lastSelectedP+" lst_"+lastSelectedT);	//DEBUG
+					//System.out.println(" nb1_"+nb1);					//DEBUG
+					//System.out.println(" nb2_"+nb2);	//DEBUG	
+
 		int time = 0;
 
 		rrIndex = 0;
@@ -144,36 +156,54 @@ public class processes
 			int  tempHashIndex = 0;
 
 			int burstTime = 0; int process = 0; int nextAvailrrIndex = 0; int nextAvailableP = 0; int tempIndex = 0;
-			int specialCase = 0;
+			int specialCase = 0; int burstHasTleft = 1;
 
 			while( time < runFor )
 			{
+				//Print arrived
 				specialCase = qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
-				//DEBUG
-				System.out.println("BurstSorted"+Arrays.deepToString(burstSortedTQ));
-				System.out.println("arivedSortedT"+Arrays.deepToString(arivedSortedT));				//DEBUG
+				if(specialCase == 1)
+				{
+					time = qTime(time, q);
+					//specialCase = 0;
+					//qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
+				}					
+
+				//Prep for printing Select
 				process = rrIndexHashIP.get(rrIndex); //rrIndex = process - 1
 				burstTime = burstTimeForP(burstSortedTQ, process, processCount);
-				printHash(rrIndexHash);	//DEBUG
-				System.out.println(" P_"+process+" BT_"+burstTime+" rrIndex_"+rrIndex);				//DEBUG
 				
+				//Print selected this should happen every Q
 				//If process has not arrived check next process available
-				if( !arrivedProcesses.contains(process))
+				if( !arrivedProcesses.contains(process) )
 				{
 					//Find next Available arrived process
+					//DEBUG_Thought	add finished condition to this
 					tempIndex = nextAvailableArrivedP(rrIndexHash, arrivedProcesses, rrIndex, processCount);
 					if(tempIndex == 999)
 					{
-						//Print IDLE
+						//Print IDLE untill you find next available P
 						System.out.println("there ar no other arrived Ps");
 
 					}
 					else
 					{
+						//Print next P in the que thats available
 						rrIndex = tempIndex;
 						nextAvailableP =	rrIndexHash.get(arivedSortedT[0][tempIndex])+1;//rrIndex = process - 1
 						System.out.println(" NextAvailableP_"+nextAvailableP);
 						printSelected(bw, time, nextAvailableP, burstTime);
+
+						//Update burst time
+						/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
+						/*Finish*/ 	int nb2 = 10000;  //we are using nb1 no need to compare DEBUG_Thought
+						//If this returns 0 the P burst has finished
+						burstHasTleft = updateBTimeQ( burstSortedTQ, process, processCount, nb1, 10000);
+						if( burstHasTleft == 0 )
+						{
+							printFinished(bw, time, process);
+						}
+
 						rrIndex++;
 						rrIndex = (rrIndex >= processCount)?0:rrIndex;
 
@@ -182,20 +212,26 @@ public class processes
 				else	//Desired P has arrived we can print it
 				{
 					printSelected(bw, time, process, burstTime);
+
+					//Update burst time
+					/*Q */		int nb1 = burstTimeForP(burstSortedTQ, process, processCount) - q;
+					/*Finish*/ 	int nb2 = 10000;  //we are using nb1 no need to compare DEBUG_Thought
+					//If this returns 0 the P burst has finished
+					burstHasTleft = updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
+					if( burstHasTleft == 0 )
+					{
+						printFinished(bw, time, process);
+					}
+
 					rrIndex++;
 					rrIndex = (rrIndex >= processCount)?0:rrIndex;
-					System.out.println("rrIndex("+rrIndex+")");	//DEBUG
 				}
 
-				//something arrived at zero
-				if( specialCase == 1 )
-				{
-					qRun(bw, rrIndexHash, arrivedProcesses, arivedSortedT, burstSortedTQ, time, q, processCount, specialCase);
-				}
-				
-				time = qTime(time, q);
+				//Move to next quantum
+				if(specialCase == 0)
+					time = qTime(time, q);
+
 				System.out.println();
-
 			}//END of while loop
 
 			//////////////////////////////////////////////////////
@@ -232,65 +268,71 @@ public class processes
 
 		try 
 		{
-			bw.write("");
+			bw.write(""); //might not need the try catch
 
 			//t will return +1 greater than intuition
 			for(t = time; t <time + q; t++)
 			{
 				System.out.println(" t_"+t);	//DEBUG
 
-				//If process arrived at 0 skip 0's arrival print
-				if( specialCase == 1 )
+				//If process arrived at 0 print arrived and selected. 
+				//From now on this prints last arrived befor next selected DEBUG_Thoughts
+				if( t == 0 && specialCase == 0 )
 				{
-					if( t == 0 )
+					if( pThatArrivedAtThisT(arivedSortedT, t, processCount) != 0 )
 					{
-						t++;		
+						//Keep track of all arrived processes
+						int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
+						arrivedProcesses.add(process);
+
+						//Print arrived then selected
+						printArrived(bw, t, process);
+						int burstTime = burstTimeForP(burstSortedTQ, process, processCount);
+						//Print selected 
+						printSelected(bw, t, process, burstTime);
+
+						rrIndex++;
+						rrIndex = (rrIndex >= processCount)?0:rrIndex;
+						//lastSelectedP = process;
+						//lastSelectedT = t;
+
+						specialCase = 1;
+						//return 1;	//this makes specialCase = 1
 					}
 				}
 				
-				//process arrived we need to interupt and start over
+				//Print process arived
 				if( pThatArrivedAtThisT(arivedSortedT, t, processCount) != 0 )
 				{
-					//Keep track of all arrived processes
-					int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
-					arrivedProcesses.add(process);
+					//If we are not on first iteration
+					if(specialCase == 0)
+					{
+						//Keep track of all arrived processes
+						int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
+						arrivedProcesses.add(process);
 
-					//rrIndex = rrIndexHash.get(process);
-					//rrIndex = (rrIndex >= processCount)?0:rrIndex;
-					System.out.println("rrIdx_"+rrIndex+")"+" P_"+process+" Arivd");	//DEBUG
+						printArrived(bw, t, process);
 
-					printArrived(bw, t, process);
+					}  //If we are on first iteration
+					else if(specialCase == 1 && t > 0)
+					{
+						//Keep track of all arrived processes
+						int process = pThatArrivedAtThisT(arivedSortedT, t, processCount);					
+						arrivedProcesses.add(process);
 
-					//int nb1 = (time + q) - t;							//DEBUG
-					//int nb2 = t+ burstTimeForP(burstSortedTQ, process, processCount);
-					//updateBTimeQ( burstSortedTQ, process, processCount, nb1, nb2);
-					lastSelectedP = process;
-					lastSelectedT = t;
+						printArrived(bw, t, process);					
+					}
 
-					//A P arrived at 0 this is a special case
-					if( t == 0 )
-						return 1;
-
-					//DEBUG
-					//System.out.println("BurstTimeArray"+Arrays.deepToString(burstSortedTQ));	//DEBUG
-					//System.out.println(" P_"+process+" t_"+t+" time_"+time+" q_"+q+" lsp_"+lastSelectedP+" lst_"+lastSelectedT);	//DEBUG
-					//System.out.println(" nb1_"+nb1);					//DEBUG
-					//System.out.println(" nb2_"+nb2);	//DEBUG				
-
-					//return t;
 				}
 
 			}//END time for loop
-
-
-		return 0;
 
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		return 1;
+		return specialCase;
 	}
 
 
@@ -336,7 +378,7 @@ public class processes
 	}
 
 	//Updating burst time for previous selected numProcess 										//see meth call
-	public static void updateBTimeQ( Integer[][] burstSortedT, int  process, int  processCount, int nb1, int nb2)
+	public static int updateBTimeQ( Integer[][] burstSortedT, int  process, int  processCount, int nb1, int nb2)
 	{
 		int newBurstT = (nb1<nb2)?nb1:nb2;
 
@@ -348,6 +390,8 @@ public class processes
 			if(process == burstSortedT[0][i])
 				burstSortedT[1][i] = newBurstT;
 		}
+
+		return newBurstT;
 	}
 
 	public static void printHash(Hashtable<Integer, Integer> rrIndexHash)
